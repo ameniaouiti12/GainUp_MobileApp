@@ -1,0 +1,322 @@
+package tn.esprit.gainupdam.ScreenHome
+
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import tn.esprit.gainupdam.BottomNavigationBar.BottomNavigation
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun HomeScreen(navController: NavHostController) {
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF3A4B6B))
+            .padding(13.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()) // Ajouter le défilement vertical
+        ) {
+            // Top Section with Current Date
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    val currentDate = LocalDate.now()
+                    Text(
+                        text = currentDate.format(DateTimeFormatter.ofPattern("EEEE")),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White
+                    )
+                    Text(
+                        text = currentDate.format(DateTimeFormatter.ofPattern("dd MMMM")),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            // Date Selector
+            DateSelector(selectedDate) { date ->
+                selectedDate = date
+            }
+
+            // Progress Card
+            ProgressCard()
+
+            // Calorie Card
+            CalorieCard()
+
+            // Stats Cards
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                StatCard(
+                    title = "Sleep",
+                    value = "5/8",
+                    unit = "Hours",
+                    progress = 0.625f
+                )
+                StatCard(
+                    title = "Water",
+                    value = "3/5",
+                    unit = "Liters",
+                    progress = 0.6f
+                )
+            }
+        }
+
+        // Bottom Navigation Bar (this will stay at the bottom)
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+        ) {
+            BottomNavigation(navController)
+        }
+    }
+}
+
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun DateSelector(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        val dates = List(5) { LocalDate.now().plusDays(it.toLong()) }
+        dates.forEach { date ->
+            DateCard(date = date, isSelected = date == selectedDate) {
+                onDateSelected(date)
+            }
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun DateCard(date: LocalDate, isSelected: Boolean, onClick: () -> Unit) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) Color(0xFF2196F3) else Color(0xFF252644)
+    )
+    Card(
+        modifier = Modifier
+            .width(60.dp)
+            .height(80.dp)
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        shape = RoundedCornerShape(8.dp) // Coins arrondis
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = date.dayOfMonth.toString(),
+                style = MaterialTheme.typography.titleLarge,
+                color = Color.White
+            )
+            Text(
+                text = date.format(DateTimeFormatter.ofPattern("EEE")),
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun ProgressCard() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF252644)),
+        shape = RoundedCornerShape(13.dp) // Coins arrondis
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(
+                text = "Workout Progress!",
+                style = MaterialTheme.typography.titleLarge,
+                color = Color.White
+            )
+            Text(
+                text = "14 Exercises left",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
+            LinearProgressIndicator(
+                progress = 0.75f,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                color = Color(0xFF2196F3),
+                trackColor = Color(0xFF1A1B2E)
+            )
+        }
+    }
+}
+
+@Composable
+fun StatCard(title: String, value: String, unit: String, progress: Float) {
+    Card(
+        modifier = Modifier
+            .width(140.dp)
+            .height(140.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF252644)),
+        shape = RoundedCornerShape(12.dp) // Coins arrondis
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White
+            )
+            Column {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = unit,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            }
+            CircularProgressIndicator(
+                progress = progress,
+                modifier = Modifier.size(40.dp),
+                color = Color(0xFF2196F3),
+                trackColor = Color(0xFF1A1B2E)
+            )
+        }
+    }
+}
+
+@Composable
+fun CalorieCard() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF252644)),
+        shape = RoundedCornerShape(12.dp) // Coins arrondis
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "1456 kcal",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Consumed",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "2875 kcal",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Remaining",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Macronutrients progress bars
+            MacroProgressBar(label = "P", value = "10/12g", progress = 0.83f)
+            Spacer(modifier = Modifier.height(4.dp))
+            MacroProgressBar(label = "C", value = "10/12g", progress = 0.83f)
+            Spacer(modifier = Modifier.height(4.dp))
+            MacroProgressBar(label = "F", value = "10/12g", progress = 0.83f)
+        }
+    }
+}
+
+@Composable
+fun MacroProgressBar(label: String, value: String, progress: Float) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White,
+            modifier = Modifier.width(20.dp)
+        )
+        LinearProgressIndicator(
+            progress = progress,
+            modifier = Modifier
+                .weight(1f)
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp)),
+            color = Color(0xFF2196F3),
+            trackColor = Color(0xFF1A1B2E)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+    }
+}
