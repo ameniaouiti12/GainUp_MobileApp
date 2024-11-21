@@ -3,9 +3,9 @@ package tn.esprit.gainupdam.BottomNavigationBar
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -36,15 +36,17 @@ fun BottomNavigation(navController: NavController) {
         BottomNavItem.Profile
     )
 
+    var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Home) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(90.dp) // Augmenter la hauteur de la carte
-            .padding(3.dp), // Ajuster le padding pour plus d'espace
+            .height(75.dp) // Augmenter la hauteur de la carte
+            .padding(4.dp), // Ajuster le padding pour plus d'espace
         shape = RoundedCornerShape(14.dp), // Augmenter le rayon des coins arrondis
         elevation = CardDefaults.cardElevation(12.dp), // Augmenter l'élévation pour plus de profondeur
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = if (selectedItem == BottomNavItem.Home) Color(0xFF4B4958) else Color(0xFF3161F6),
             contentColor = MaterialTheme.colorScheme.onSurface
         )
     ) {
@@ -62,14 +64,14 @@ fun BottomNavigation(navController: NavController) {
                             painter = item.icon(),
                             contentDescription = item.title,
                             tint = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(35.dp) // Réduire la taille de l'icône à 30.dp
+                            modifier = Modifier.size(28.dp) // Réduire la taille de l'icône à 30.dp
                         )
                     },
                     label = {
                         Text(
                             text = item.title,
                             color = if (currentRoute == item.route) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                            fontSize = 9.sp // Diminuer la taille du texte à 9.sp
+                            fontSize = 7.sp // Diminuer la taille du texte à 9.sp
                         )
                     },
                     selected = currentRoute == item.route,
@@ -78,13 +80,13 @@ fun BottomNavigation(navController: NavController) {
                             popUpTo(navController.graph.startDestinationId)
                             launchSingleTop = true
                         }
+                        selectedItem = item // Set the selected item when clicked
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurface,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurface,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                        selectedIconColor = Color(0xFF3161F6), // Custom selected icon color
+                        unselectedIconColor = Color(0xFFB0B0B0), // Custom unselected icon color
+                        selectedTextColor = Color(0xFF3161F6), // Custom selected text color
+                        unselectedTextColor = Color(0xFFB0B0B0), // Custom unselected text color
                     )
                 )
             }

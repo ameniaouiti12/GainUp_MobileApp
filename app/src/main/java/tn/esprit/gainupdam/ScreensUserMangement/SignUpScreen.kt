@@ -1,5 +1,9 @@
 package tn.esprit.gainupdam.ScreensUserMangement
 
+import android.app.Activity
+import android.content.Context
+import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,11 +23,21 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.facebook.CallbackManager
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import tn.esprit.gainupdam.R
 import tn.esprit.gainupdam.ViewModel.AuthViewModelSinUp
 
 @Composable
-fun SignUpScreen(navController: NavController, authViewModelSignUp: AuthViewModelSinUp) {
+fun SignUpScreen(
+    navController: NavController,
+    authViewModelSignUp: AuthViewModelSinUp,
+    callbackManager: CallbackManager,
+    context: ComponentActivity
+) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -74,21 +88,18 @@ fun SignUpScreen(navController: NavController, authViewModelSignUp: AuthViewMode
             label = "Full Name",
             isError = fullNameError
         )
-
         SignUpInputField(
             value = email,
             onValueChange = { email = it; emailError = !android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches() },
             label = "Email",
             isError = emailError
         )
-
         SignUpPasswordInputField(
             value = password,
             onValueChange = { password = it; passwordError = it.length < 6 },
             label = "Password",
             isError = passwordError
         )
-
         SignUpPasswordInputField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it; confirmPasswordError = it != password },
@@ -126,8 +137,7 @@ fun SignUpScreen(navController: NavController, authViewModelSignUp: AuthViewMode
                 authViewModelSignUp.performSignUp(fullName, email, password, confirmPassword) { success, message ->
                     signUpMessage = message
                     if (success) {
-                        // Navigate to the next screen or show a success message
-                        navController.navigate("sign_in")
+                        authViewModelSignUp.dismissSignUpDialog()
                     }
                 }
             }
@@ -139,10 +149,51 @@ fun SignUpScreen(navController: NavController, authViewModelSignUp: AuthViewMode
 
         DividerWithOrTwo()
 
-        SocialSignUpButtons(navController)
+        SocialSignUpButtons(navController, callbackManager, context)
 
         SignInLink(onClick = { navController.navigate("sign_in") })
     }
+
+    if (authViewModelSignUp.isLoading.value) {
+        CircularProgressIndicator(
+            color = Color(0xFF0A3D62),
+            modifier = Modifier
+                .padding(vertical = 16.dp)
+        )
+    }
+
+    if (authViewModelSignUp.showSignUpDialog.value) {
+        AlertDialog(
+            onDismissRequest = { authViewModelSignUp.dismissSignUpDialog() },
+            title = { Text("Sign Up Successful") },
+            text = { Text("You have successfully signed up!") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // Clear session or authentication state here
+                        clearSession(context) // This is the function that clears session data
+
+                        // Navigate to the SignIn screen
+                        navController.navigate("sign_in") {
+                            popUpTo("sign_up") { inclusive = true } // Pop the SignUp screen from the stack
+                        }
+                        authViewModelSignUp.dismissSignUpDialog()
+                    }
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+}
+
+fun clearSession(context: Context) {
+    // Clear session data or authentication state here
+    // For example, you can clear SharedPreferences or any other session data
+    val sharedPreferences = context.getSharedPreferences("session_prefs", Context.MODE_PRIVATE)
+    val editor = sharedPreferences.edit()
+    editor.clear()
+    editor.apply()
 }
 
 @Composable
@@ -274,7 +325,14 @@ fun DividerWithOrTwo() {
 }
 
 @Composable
-fun SocialSignUpButtons(navController: NavController) {
+fun SocialSignUpButtons(navController: NavController, callbackManager: CallbackManager, context: ComponentActivity) {
+    val googleSignInClient = remember {
+        GoogleSignIn.getClient(context, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("1019999665797-g988f366sdht05en53j05519on5mm.apps.googleusercontent.com")  // Remplacez par votre ID client
+            .requestEmail()
+            .build())
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -282,7 +340,7 @@ fun SocialSignUpButtons(navController: NavController) {
         horizontalArrangement = Arrangement.Center
     ) {
         OutlinedButton(
-            onClick = { /* Google Sign-In Logic */ },
+            onClick = { signUpWithGoogle(googleSignInClient, context) },
             modifier = Modifier
                 .width(170.dp)
                 .height(45.dp)
@@ -303,12 +361,13 @@ fun SocialSignUpButtons(navController: NavController) {
             )
         }
 
+        // Facebook Button
         Button(
-            onClick = { /* Facebook Sign-In Logic */ },
+            onClick = { facebookSignUp(navController, callbackManager, context) },
             modifier = Modifier
                 .width(170.dp)
                 .height(45.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1877F2))
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1877F2)) // Facebook blue color
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.icon_face),
@@ -325,6 +384,15 @@ fun SocialSignUpButtons(navController: NavController) {
     }
 }
 
+fun signUpWithGoogle(googleSignInClient: GoogleSignInClient, context: Context) {
+    val signInIntent = googleSignInClient.signInIntent
+    (context as Activity).startActivityForResult(signInIntent, 102)
+}
+fun handleGoogleSignInSuccess(account: GoogleSignInAccount, navController: NavController, context: Context) {
+    Toast.makeText(context, "Bienvenue ${account.displayName}", Toast.LENGTH_SHORT).show()
+    // Naviguer vers la page d'accueil
+    navController.navigate("home") // Remplacez "home" par le bon écran
+}
 @Composable
 fun SignInLink(onClick: () -> Unit) {
     Row(

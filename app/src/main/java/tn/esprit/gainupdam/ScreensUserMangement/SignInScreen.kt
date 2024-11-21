@@ -1,5 +1,10 @@
 package tn.esprit.gainupdam.ScreensUserMangement
 
+import android.app.Activity
+import android.content.Context
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,11 +27,22 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.GraphRequest
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import tn.esprit.gainupdam.R
 import tn.esprit.gainupdam.ViewModel.AuthViewModel
 
 @Composable
-fun SignInScreen(navController: NavController, authViewModel: AuthViewModel) {
+fun SignInScreen(navController: NavController, authViewModel: AuthViewModel, callbackManager: CallbackManager, context: ComponentActivity) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
@@ -84,11 +100,13 @@ fun SignInScreen(navController: NavController, authViewModel: AuthViewModel) {
             }
             ForgotPasswordLink(navController = navController)
             DividerWithOr()
-            SocialSignInButtons(navController = navController)
+            SocialSignInButtons(navController = navController, callbackManager = callbackManager, context = context)
             SignUpLink(onClick = { navController.navigate("sign_up") })
         }
     }
 }
+
+
 
 @Composable
 fun EmailInput(
@@ -291,7 +309,14 @@ fun DividerWithOr() {
 }
 
 @Composable
-fun SocialSignInButtons(navController: NavController) {
+fun SocialSignInButtons(navController: NavController, callbackManager: CallbackManager, context: ComponentActivity) {
+    val googleSignInClient = remember {
+        GoogleSignIn.getClient(context, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("1019999665797-g988f366sdht05en53j05519on5ou5mm.apps.googleusercontent.com")  // Remplacez par votre ID client
+            .requestEmail()
+            .build())
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -300,7 +325,7 @@ fun SocialSignInButtons(navController: NavController) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         OutlinedButton(
-            onClick = { /* Handle Google sign-in */ },
+            onClick = { signInWithGoogle(googleSignInClient, context) },
             modifier = Modifier
                 .width(170.dp)
                 .height(45.dp)
@@ -322,7 +347,7 @@ fun SocialSignInButtons(navController: NavController) {
         }
 
         Button(
-            onClick = { /* Handle Facebook sign-in */ },
+            onClick = { facebookSignIn(navController, callbackManager, context) },
             modifier = Modifier
                 .width(170.dp)
                 .height(45.dp),
@@ -342,7 +367,62 @@ fun SocialSignInButtons(navController: NavController) {
         }
     }
 }
+fun signInWithGoogle(googleSignInClient: GoogleSignInClient, context: Context) {
+    val signInIntent = googleSignInClient.signInIntent
+    (context as Activity).startActivityForResult(signInIntent, 101)
+}
 
+fun handleGoogleSignInSuccess(account: GoogleSignInAccount, navController: NavController) {
+    // Assurez-vous que l'authentification est réussie
+    if (account != null) {
+        // Authentification réussie, naviguer vers "home"
+        navController.navigate("home")
+    }
+}
+fun facebookSignIn(navController: NavController, callbackManager: CallbackManager, context: ComponentActivity) {
+    val loginManager = LoginManager.getInstance()
+    loginManager.logInWithReadPermissions(context, listOf("email", "public_profile"))
+    loginManager.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+        override fun onCancel() {
+            Toast.makeText(context.applicationContext, "Connexion annulée", Toast.LENGTH_SHORT).show()
+        }
+
+        override fun onError(error: FacebookException) {
+            Toast.makeText(context.applicationContext, "Erreur d'authentification Facebook", Toast.LENGTH_SHORT).show()
+        }
+
+        override fun onSuccess(result: LoginResult) {
+            val accessToken = result.accessToken
+            getFacebookUserInfo(accessToken, navController, context)
+        }
+    })
+}
+
+private fun getFacebookUserInfo(accessToken: AccessToken, navController: NavController, context: ComponentActivity) {
+    val request = GraphRequest.newMeRequest(accessToken) { `object`, _ ->
+        try {
+            val name = `object`?.getString("name")
+            val email = `object`?.getString("email")
+            handleUserInfo(name, email, navController, context)
+        } catch (e: Exception) {
+            Toast.makeText(context.applicationContext, "Erreur lors de la récupération des informations", Toast.LENGTH_SHORT).show()
+        }
+    }
+    val parameters = Bundle()
+    parameters.putString("fields", "id,name,email")
+    request.parameters = parameters
+    request.executeAsync()
+}
+
+private fun handleUserInfo(name: String?, email: String?, navController: NavController, context: ComponentActivity) {
+    if (!name.isNullOrEmpty() && !email.isNullOrEmpty()) {
+        Toast.makeText(context.applicationContext, "Bienvenue $name", Toast.LENGTH_SHORT).show()
+        // Naviguer vers l'écran suivant ou afficher un message de succès
+        navController.navigate("home") // Remplacez "home" par l'écran cible
+    } else {
+        Toast.makeText(context.applicationContext, "Informations Facebook invalides", Toast.LENGTH_SHORT).show()
+    }
+}
 @Composable
 fun SignUpLink(onClick: () -> Unit) {
     Row(

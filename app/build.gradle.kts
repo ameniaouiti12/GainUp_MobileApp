@@ -1,3 +1,4 @@
+// build.gradle.kts
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -30,32 +31,37 @@ android {
             )
         }
     }
+
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
     buildFeatures {
         compose = true
+        viewBinding = true  // Enable ViewBinding if needed
     }
+
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-
-    }
-    buildFeatures {
-        viewBinding = true
     }
 }
 
 dependencies {
-
+    // Core AndroidX dependencies
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -66,9 +72,25 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
-    // Ajouter les dépendances nécessaires pour les icônes Material
-    implementation ("com.google.android.material:material:1.5.0")
 
+    // Material Icons Dependency
+    implementation("com.google.android.material:material:1.5.0")
+
+    // Facebook SDK
+    implementation("com.facebook.android:facebook-android-sdk:[4,5)") // Try a different version
+
+    //google
+    implementation ("com.google.android.gms:play-services-auth:20.7.0")
+
+
+    // Retrofit, OkHttp, and Dagger (Hilt) Dependencies
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation("com.google.dagger:hilt-android:2.51")
+    implementation("androidx.compose.material3:material3:1.2.0")
+
+    // Testing Dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -76,11 +98,13 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.10.0")
-    implementation("com.google.dagger:hilt-android:2.51")
-    implementation("androidx.compose.material3:material3:1.2.0")
 
-    kapt("com.google.dagger:hilt-android-compiler:2.51")// Vérifiez la version d'OkHttp
+    //icon
+    implementation ("androidx.compose.ui:ui:1.5.1")
+    implementation ("androidx.compose.material:material:1.5.1")
+    implementation ("androidx.compose.material:material-icons-extended:1.5.1")
+    implementation ("androidx.compose.ui:ui-tooling-preview:1.5.1")
+
+    // Annotation Processor for Dagger (Hilt)
+    kapt("com.google.dagger:hilt-android-compiler:2.51")
 }

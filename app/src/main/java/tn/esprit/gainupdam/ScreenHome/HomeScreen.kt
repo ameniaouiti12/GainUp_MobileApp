@@ -30,7 +30,7 @@ fun HomeScreen(navController: NavHostController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF3A4B6B))
+            .background(Color(0xFF03224c))
             .padding(13.dp)
     ) {
         Column(
@@ -127,7 +127,7 @@ fun DateSelector(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
 @Composable
 fun DateCard(date: LocalDate, isSelected: Boolean, onClick: () -> Unit) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) Color(0xFF2196F3) else Color(0xFF252644)
+        targetValue = if (isSelected) Color(0xFF2196F3) else Color(0xFF0a1728)
     )
     Card(
         modifier = Modifier
@@ -162,7 +162,7 @@ fun ProgressCard() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF252644)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0a1728)),
         shape = RoundedCornerShape(13.dp) // Coins arrondis
     ) {
         Column(
@@ -186,7 +186,7 @@ fun ProgressCard() {
                     .height(6.dp)
                     .clip(RoundedCornerShape(4.dp)),
                 color = Color(0xFF2196F3),
-                trackColor = Color(0xFF1A1B2E)
+                trackColor = Color(0xFF0a1728)
             )
         }
     }
@@ -198,7 +198,7 @@ fun StatCard(title: String, value: String, unit: String, progress: Float) {
         modifier = Modifier
             .width(140.dp)
             .height(140.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF252644)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0a1728)),
         shape = RoundedCornerShape(12.dp) // Coins arrondis
     ) {
         Column(
@@ -229,7 +229,7 @@ fun StatCard(title: String, value: String, unit: String, progress: Float) {
                 progress = progress,
                 modifier = Modifier.size(40.dp),
                 color = Color(0xFF2196F3),
-                trackColor = Color(0xFF1A1B2E)
+                trackColor = Color(0xFF0a1728)
             )
         }
     }
@@ -241,7 +241,7 @@ fun CalorieCard() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF252644)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0a1728)),
         shape = RoundedCornerShape(12.dp) // Coins arrondis
     ) {
         Column(
