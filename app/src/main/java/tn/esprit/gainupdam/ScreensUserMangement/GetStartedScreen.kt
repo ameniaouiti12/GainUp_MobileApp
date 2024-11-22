@@ -19,7 +19,7 @@ import androidx.navigation.NavController
 import tn.esprit.gainupdam.R
 
 @Composable
-fun GetStartedScreen(navController: NavController) {
+fun GetStartedScreen (navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -97,3 +97,4 @@ fun GetStartedScreen(navController: NavController) {
         }
     }
 }
+

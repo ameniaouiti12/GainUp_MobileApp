@@ -105,6 +105,13 @@ dependencies {
     implementation ("androidx.compose.material:material-icons-extended:1.5.1")
     implementation ("androidx.compose.ui:ui-tooling-preview:1.5.1")
 
+
+    implementation("androidx.compose.ui:ui:1.6.0")
+    implementation("androidx.compose.material:material:1.6.0")
+    implementation("androidx.compose.ui:ui-tooling:1.6.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+
+
     // Annotation Processor for Dagger (Hilt)
     kapt("com.google.dagger:hilt-android-compiler:2.51")
 }

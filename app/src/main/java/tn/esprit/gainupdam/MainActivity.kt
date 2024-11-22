@@ -26,7 +26,6 @@ import tn.esprit.gainupdam.ViewModel.*
 class MainActivity : ComponentActivity() {
     private lateinit var callbackManager: CallbackManager
     private val navigateToHomeLiveData = MutableLiveData<Boolean>()
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +56,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("ComposableDestinationInComposeScope")
 @Composable
@@ -71,7 +72,6 @@ fun GainUpDamApp(
     val authViewModelForgotPassword: AuthViewModelForgotPassword = viewModel()
     val authViewModelVerifyOtp: AuthViewModelVerifyOtp = viewModel()
     val authManager = AuthenticationManager(context)
-
     navigateToHomeLiveData.observe(context as LifecycleOwner) { shouldNavigate ->
         if (shouldNavigate == true) {
             navController.navigate("home") {
@@ -84,7 +84,8 @@ fun GainUpDamApp(
     NavHost(navController = navController, startDestination = "get_started") {
         composable("get_started") { GetStartedScreen(navController) }
         composable("sign_in") {
-            SignInScreen(navController = navController,
+            SignInScreen(
+                navController = navController,
                 authViewModel = authViewModel,
                 callbackManager = callbackManager,
                 context = context
@@ -98,7 +99,12 @@ fun GainUpDamApp(
                 context = context
             )
         }
-        composable("forgot_password") { ForgotPasswordScreen(navController, authViewModelForgotPassword) }
+        composable("forgot_password") {
+            ForgotPasswordScreen(
+                navController,
+                authViewModelForgotPassword
+            )
+        }
         composable("change_password") { ChangePasswordScreen(navController) }
         composable("home") { HomeScreen(navController) }
         composable("profile") { ProfileScreen(navController) }
