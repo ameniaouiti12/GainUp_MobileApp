@@ -22,6 +22,12 @@ import tn.esprit.gainupdam.ScreenHome.EditProfileScreen
 import tn.esprit.gainupdam.ScreenHome.HomeScreen
 import tn.esprit.gainupdam.ScreensUserMangement.*
 import tn.esprit.gainupdam.ViewModel.*
+import tn.esprit.gainupdam.screens.AgeScreen
+import tn.esprit.gainupdam.screens.GenderScreen
+import tn.esprit.gainupdam.screens.GoalScreen
+import tn.esprit.gainupdam.screens.HeightScreen
+import tn.esprit.gainupdam.screens.LifestyleScreen
+import tn.esprit.gainupdam.screens.WeightScreen
 
 class MainActivity : ComponentActivity() {
     private lateinit var callbackManager: CallbackManager
@@ -111,5 +117,14 @@ fun GainUpDamApp(
         composable("editProfileScreen") { EditProfileScreen(navController) }
         composable("verify_otp") { VerifyOtpScreen(navController, authViewModelVerifyOtp, "") }
         composable("messages") { ChatScreen(navController) }
+
+
+        // Quiz Screens
+        composable("gender") { GenderScreen(navController) }
+        composable("age") { AgeScreen(navController) }
+        composable("height") { HeightScreen(navController) }
+        composable("weight") { WeightScreen(navController) }
+        composable("goal") { GoalScreen(navController) }
+        composable("lifestyle") { LifestyleScreen(navController) }
     }
 }
