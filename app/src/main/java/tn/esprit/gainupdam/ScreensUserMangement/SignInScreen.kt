@@ -40,6 +40,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import tn.esprit.gainupdam.R
 import tn.esprit.gainupdam.ViewModel.AuthViewModel
+import tn.esprit.gainupdam.utils.PreferencesHelper
 
 @Composable
 fun SignInScreen(navController: NavController, authViewModel: AuthViewModel, callbackManager: CallbackManager, context: ComponentActivity) {
@@ -84,7 +85,11 @@ fun SignInScreen(navController: NavController, authViewModel: AuthViewModel, cal
                 onClick = {
                     authViewModel.login(email, password, rememberMe) { success ->
                         if (success) {
-                            navController.navigate("home")
+                            if (PreferencesHelper.isQuizCompleted(context)) {
+                                navController.navigate("home")
+                            } else {
+                                navController.navigate("gender")
+                            }
                         }
                     }
                 }

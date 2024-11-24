@@ -112,6 +112,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
 
 
+    implementation ("androidx.preference:preference-ktx:1.1.1")
+
+
     // Annotation Processor for Dagger (Hilt)
     kapt("com.google.dagger:hilt-android-compiler:2.51")
 }
