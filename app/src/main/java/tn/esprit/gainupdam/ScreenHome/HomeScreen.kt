@@ -19,14 +19,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import tn.esprit.gainupdam.BottomNavigationBar.BottomNavigation
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import tn.esprit.gainupdam.Navigation.TopBar
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -38,32 +35,8 @@ fun HomeScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()) // Ajouter le défilement vertical
         ) {
-            // Top Section with Current Date
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    val currentDate = LocalDate.now()
-                    Text(
-                        text = currentDate.format(DateTimeFormatter.ofPattern("EEEE")),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White
-                    )
-                    Text(
-                        text = currentDate.format(DateTimeFormatter.ofPattern("dd MMMM")),
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            // Date Selector
-            DateSelector(selectedDate) { date ->
-                selectedDate = date
-            }
+            // TopBar
+            TopBar(navController)
 
             // Progress Card
             ProgressCard()
@@ -100,58 +73,6 @@ fun HomeScreen(navController: NavHostController) {
                 .fillMaxWidth()
         ) {
             BottomNavigation(navController)
-        }
-    }
-}
-
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun DateSelector(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        val dates = List(5) { LocalDate.now().plusDays(it.toLong()) }
-        dates.forEach { date ->
-            DateCard(date = date, isSelected = date == selectedDate) {
-                onDateSelected(date)
-            }
-        }
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun DateCard(date: LocalDate, isSelected: Boolean, onClick: () -> Unit) {
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) Color(0xFF2196F3) else Color(0xFF0a1728)
-    )
-    Card(
-        modifier = Modifier
-            .width(60.dp)
-            .height(80.dp)
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        shape = RoundedCornerShape(8.dp) // Coins arrondis
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = date.dayOfMonth.toString(),
-                style = MaterialTheme.typography.titleLarge,
-                color = Color.White
-            )
-            Text(
-                text = date.format(DateTimeFormatter.ofPattern("EEE")),
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.White
-            )
         }
     }
 }

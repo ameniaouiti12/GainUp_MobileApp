@@ -46,7 +46,7 @@ fun BottomNavigation(navController: NavController) {
         shape = RoundedCornerShape(14.dp), // Augmenter le rayon des coins arrondis
         elevation = CardDefaults.cardElevation(12.dp), // Augmenter l'élévation pour plus de profondeur
         colors = CardDefaults.cardColors(
-            containerColor = if (selectedItem == BottomNavItem.Home) Color(0xFF4B4958) else Color(0xFF3161F6),
+            containerColor = Color.White, // Set the card background color to white
             contentColor = MaterialTheme.colorScheme.onSurface
         )
     ) {

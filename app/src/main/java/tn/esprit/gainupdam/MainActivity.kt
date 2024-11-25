@@ -11,21 +11,27 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.facebook.CallbackManager
 import com.facebook.FacebookSdk
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import tn.esprit.gainupdam.ScreenHome.ChatScreen
 import tn.esprit.gainupdam.ScreenHome.EditProfileScreen
 import tn.esprit.gainupdam.ScreenHome.HomeScreen
+import tn.esprit.gainupdam.ScreenHome.NutritionScreen
+import tn.esprit.gainupdam.ScreenHome.RecipeDetailsScreen
 import tn.esprit.gainupdam.ScreensUserMangement.*
 import tn.esprit.gainupdam.ViewModel.*
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var callbackManager: CallbackManager
     private val navigateToHomeLiveData = MutableLiveData<Boolean>()
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,8 +61,6 @@ class MainActivity : ComponentActivity() {
         private const val RC_SIGN_IN = 9001
     }
 }
-
-
 
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("ComposableDestinationInComposeScope")
@@ -111,5 +115,19 @@ fun GainUpDamApp(
         composable("editProfileScreen") { EditProfileScreen(navController) }
         composable("verify_otp") { VerifyOtpScreen(navController, authViewModelVerifyOtp, "") }
         composable("messages") { ChatScreen(navController) }
+        composable("nutrition") { NutritionScreen(navController) }
+        composable(
+            "recipe_detail/{title}/{imageRes}/{recipe}",
+            arguments = listOf(
+                navArgument("title") { type = NavType.StringType },
+                navArgument("imageRes") { type = NavType.IntType },
+                navArgument("recipe") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val title = backStackEntry.arguments?.getString("title") ?: ""
+            val imageRes = backStackEntry.arguments?.getInt("imageRes") ?: 0
+            val recipe = backStackEntry.arguments?.getString("recipe") ?: ""
+            RecipeDetailsScreen(navController, title, imageRes, recipe)
+        }
     }
 }
