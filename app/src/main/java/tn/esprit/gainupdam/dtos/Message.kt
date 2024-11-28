@@ -1,4 +1,7 @@
 package tn.esprit.gainupdam.dtos
 
-class Message {
-}
+
+data class Message(
+    val text: String,
+    val isFromBot: Boolean
+)

@@ -110,6 +110,7 @@ dependencies {
     implementation("androidx.compose.material:material:1.6.0")
     implementation("androidx.compose.ui:ui-tooling:1.6.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
 
     // Annotation Processor for Dagger (Hilt)

@@ -4,6 +4,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,15 +29,23 @@ import tn.esprit.gainupdam.R
 @Composable
 fun ChatScreen(navController: NavController) {
     var messageText by remember { mutableStateOf("") }
-    var messages by remember {
-        mutableStateOf(
-            listOf(
-                Message(
-                    text = "Hello, I'm FitBot! 👋 I'm your personal sport assistant. How can I help you?",
-                    isFromBot = true
-                )
+    val messages = remember {
+        mutableStateListOf(
+            Message(
+                text = "Hello, I'm FitBot! 👋 I'm your personal sport assistant. How can I help you?",
+                isFromBot = true
             )
         )
+    }
+
+    val apiChatScreen = ApiChatScreen() // Instance de l'API
+
+    // Scroll state pour permettre le défilement jusqu'au bas après l'ajout d'un message
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(messages.size) {
+        // Défile automatiquement vers le dernier élément de la liste
+        listState.animateScrollToItem(messages.size - 1)
     }
 
     Column(
@@ -44,7 +53,7 @@ fun ChatScreen(navController: NavController) {
             .fillMaxSize()
             .background(Color(0xFF03224c))
     ) {
-        // Top Bar
+        // Barre supérieure
         TopAppBar(
             title = {
                 Row(
@@ -103,20 +112,17 @@ fun ChatScreen(navController: NavController) {
                 containerColor = Color(0xFF03224c)
             )
         )
-        // Chat Messages
+        // Liste des messages
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(16.dp),
-            reverseLayout = true
+            state = listState
         ) {
             items(messages) { message ->
                 ChatMessage(message)
                 Spacer(modifier = Modifier.height(8.dp))
-            }
-            item {
-                QuickReplyOptions()
             }
         }
 
@@ -126,7 +132,13 @@ fun ChatScreen(navController: NavController) {
             onValueChange = { messageText = it },
             onSendClick = {
                 if (messageText.isNotEmpty()) {
-                    messages = listOf(Message(messageText, isFromBot = false)) + messages
+                    // Ajouter le message de l'utilisateur
+                    messages.add(Message(messageText, isFromBot = false))
+
+                    // Obtenir la réponse du bot
+                    apiChatScreen.getResponse(messageText) { responseText ->
+                        messages.add(Message(responseText, isFromBot = true))
+                    }
                     messageText = ""
                 }
             }
@@ -196,39 +208,10 @@ fun ChatMessage(message: Message) {
 }
 
 @Composable
-fun QuickReplyOptions() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
-        QuickReplyButton("Book me a visit in a gym")
-        QuickReplyButton("Show me other sports facilities around")
-        QuickReplyButton("Show me other options")
-    }
-}
-
-@Composable
-fun QuickReplyButton(text: String) {
-    Button(
-        onClick = { /* Handle quick reply click */ },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF2196F3)
-        ),
-        shape = RoundedCornerShape(24.dp)
-    ) {
-        Text(text = text, color = Color.White)
-    }
-}
-
-@Composable
 fun MessageInput(
     value: String,
     onValueChange: (String) -> Unit,
-    onSendClick: () -> Unit
+    onSendClick: () -> Unit // Remplacer @Composable () -> Unit par () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -256,7 +239,7 @@ fun MessageInput(
             )
 
             IconButton(
-                onClick = { /* Handle mic click */ },
+                onClick = { /* Handle mic click */ }, // Action pour le clic du micro
                 modifier = Modifier.padding(horizontal = 4.dp)
             ) {
                 Icon(
@@ -267,7 +250,7 @@ fun MessageInput(
             }
 
             IconButton(
-                onClick = onSendClick,
+                onClick = onSendClick, // Appeler la fonction passée en paramètre
                 modifier = Modifier.padding(start = 4.dp)
             ) {
                 Icon(
