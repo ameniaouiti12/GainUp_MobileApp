@@ -1,0 +1,50 @@
+package tn.esprit.gainupdam.screens
+
+
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import tn.esprit.gainupdam.ui.theme.DarkBlue
+import tn.esprit.gainupdam.ui.theme.Turquoise
+
+@Composable
+fun GenderScreen(navController: NavController) {
+    var selectedGender by remember { mutableStateOf("") }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DarkBlue)
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("Choose your gender", fontSize = 40.sp, color = Color.White)
+            Spacer(modifier = Modifier.height(100.dp))
+            Button(
+                onClick = { selectedGender = "Male"; navController.navigate("age") },
+                colors = ButtonDefaults.buttonColors(containerColor = Turquoise)
+            ) {
+                Text("Male", fontSize = 34.sp)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { selectedGender = "Female"; navController.navigate("age") },
+                colors = ButtonDefaults.buttonColors(containerColor = Turquoise)
+            ) {
+                Text("Female", fontSize = 34.sp)
+            }
+        }
+    }
+}

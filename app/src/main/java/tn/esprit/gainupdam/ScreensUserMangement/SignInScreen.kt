@@ -38,8 +38,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
 import tn.esprit.gainupdam.R
 import tn.esprit.gainupdam.ViewModel.AuthViewModel
+import tn.esprit.gainupdam.utils.PreferencesHelper
+import tn.esprit.gainupdam.utils.handleGoogleSignInSuccess
 
 @Composable
 fun SignInScreen(navController: NavController, authViewModel: AuthViewModel, callbackManager: CallbackManager, context: ComponentActivity) {
@@ -84,7 +88,11 @@ fun SignInScreen(navController: NavController, authViewModel: AuthViewModel, cal
                 onClick = {
                     authViewModel.login(email, password, rememberMe) { success ->
                         if (success) {
-                            navController.navigate("home")
+                            if (PreferencesHelper.isQuizCompleted(context)) {
+                                navController.navigate("home")
+                            } else {
+                                navController.navigate("gender")
+                            }
                         }
                     }
                 }
@@ -105,8 +113,6 @@ fun SignInScreen(navController: NavController, authViewModel: AuthViewModel, cal
         }
     }
 }
-
-
 
 @Composable
 fun EmailInput(
@@ -266,6 +272,7 @@ fun SignInButton(onClick: () -> Unit) {
         )
     }
 }
+
 @Composable
 fun ForgotPasswordLink(navController: NavController) {
     Text(
@@ -325,7 +332,7 @@ fun SocialSignInButtons(navController: NavController, callbackManager: CallbackM
         verticalAlignment = Alignment.CenterVertically
     ) {
         OutlinedButton(
-            onClick = { signInWithGoogle(googleSignInClient, context) },
+            onClick = { signInWithGoogle(googleSignInClient, context, navController) },
             modifier = Modifier
                 .width(170.dp)
                 .height(45.dp)
@@ -367,18 +374,21 @@ fun SocialSignInButtons(navController: NavController, callbackManager: CallbackM
         }
     }
 }
-fun signInWithGoogle(googleSignInClient: GoogleSignInClient, context: Context) {
+
+fun signInWithGoogle(googleSignInClient: GoogleSignInClient, context: Context, navController: NavController) {
     val signInIntent = googleSignInClient.signInIntent
     (context as Activity).startActivityForResult(signInIntent, 101)
 }
 
-fun handleGoogleSignInSuccess(account: GoogleSignInAccount, navController: NavController) {
-    // Assurez-vous que l'authentification est réussie
-    if (account != null) {
-        // Authentification réussie, naviguer vers "home"
-        navController.navigate("home")
+fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>, navController: NavController, context: Context) {
+    try {
+        val account = task.getResult(ApiException::class.java)
+        handleGoogleSignInSuccess(account, navController, context)
+    } catch (e: ApiException) {
+        Toast.makeText(context, "Erreur de connexion Google: ${e.message}", Toast.LENGTH_SHORT).show()
     }
 }
+
 fun facebookSignIn(navController: NavController, callbackManager: CallbackManager, context: ComponentActivity) {
     val loginManager = LoginManager.getInstance()
     loginManager.logInWithReadPermissions(context, listOf("email", "public_profile"))
@@ -417,12 +427,16 @@ private fun getFacebookUserInfo(accessToken: AccessToken, navController: NavCont
 private fun handleUserInfo(name: String?, email: String?, navController: NavController, context: ComponentActivity) {
     if (!name.isNullOrEmpty() && !email.isNullOrEmpty()) {
         Toast.makeText(context.applicationContext, "Bienvenue $name", Toast.LENGTH_SHORT).show()
-        // Naviguer vers l'écran suivant ou afficher un message de succès
-        navController.navigate("home") // Remplacez "home" par l'écran cible
+        if (PreferencesHelper.isQuizCompleted(context)) {
+            navController.navigate("home")
+        } else {
+            navController.navigate("gender")
+        }
     } else {
         Toast.makeText(context.applicationContext, "Informations Facebook invalides", Toast.LENGTH_SHORT).show()
     }
 }
+
 @Composable
 fun SignUpLink(onClick: () -> Unit) {
     Row(

@@ -113,6 +113,9 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
 
+    implementation ("androidx.preference:preference-ktx:1.1.1")
+
+
     // Annotation Processor for Dagger (Hilt)
     kapt("com.google.dagger:hilt-android-compiler:2.51")
 }

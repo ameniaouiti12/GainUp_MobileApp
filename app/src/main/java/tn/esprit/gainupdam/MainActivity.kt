@@ -1,9 +1,11 @@
 package tn.esprit.gainupdam
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -19,6 +21,9 @@ import androidx.navigation.navArgument
 import com.facebook.CallbackManager
 import com.facebook.FacebookSdk
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
 import tn.esprit.gainupdam.ScreenHome.ChatScreen
 import tn.esprit.gainupdam.ScreenHome.EditProfileScreen
 import tn.esprit.gainupdam.ScreenHome.HomeScreen
@@ -26,11 +31,20 @@ import tn.esprit.gainupdam.ScreenHome.NutritionScreen
 import tn.esprit.gainupdam.ScreenHome.RecipeDetailsScreen
 import tn.esprit.gainupdam.ScreensUserMangement.*
 import tn.esprit.gainupdam.ViewModel.*
+import tn.esprit.gainupdam.screens.AgeScreen
+import tn.esprit.gainupdam.screens.GenderScreen
+import tn.esprit.gainupdam.screens.GoalScreen
+import tn.esprit.gainupdam.screens.HeightScreen
+import tn.esprit.gainupdam.screens.LifestyleScreen
+import tn.esprit.gainupdam.screens.WeightScreen
+import tn.esprit.gainupdam.utils.PreferencesHelper
+import tn.esprit.gainupdam.utils.handleGoogleSignInSuccess
 
 
 class MainActivity : ComponentActivity() {
     private lateinit var callbackManager: CallbackManager
     private val navigateToHomeLiveData = MutableLiveData<Boolean>()
+    private val navigateToGenderLiveData = MutableLiveData<Boolean>()
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +53,7 @@ class MainActivity : ComponentActivity() {
         callbackManager = CallbackManager.Factory.create()
 
         setContent {
-            GainUpDamApp(callbackManager, this, navigateToHomeLiveData)
+            GainUpDamApp(callbackManager, this, navigateToHomeLiveData, navigateToGenderLiveData)
         }
     }
 
@@ -50,9 +64,25 @@ class MainActivity : ComponentActivity() {
 
         if (requestCode == RC_SIGN_IN) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            val account = task.result
-            if (account != null) {
+            handleGoogleSignInResult(task, this)
+        }
+    }
+
+    private fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>, context: Context) {
+        try {
+            val account = task.getResult(ApiException::class.java)
+            handleGoogleSignInSuccess(account, context)
+        } catch (e: ApiException) {
+            Toast.makeText(context, "Erreur de connexion Google: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun handleGoogleSignInSuccess(account: GoogleSignInAccount?, context: Context) {
+        account?.let {
+            if (PreferencesHelper.isQuizCompleted(context)) {
                 navigateToHomeLiveData.value = true
+            } else {
+                navigateToGenderLiveData.value = true
             }
         }
     }
@@ -68,7 +98,8 @@ class MainActivity : ComponentActivity() {
 fun GainUpDamApp(
     callbackManager: CallbackManager,
     context: ComponentActivity,
-    navigateToHomeLiveData: MutableLiveData<Boolean>
+    navigateToHomeLiveData: MutableLiveData<Boolean>,
+    navigateToGenderLiveData: MutableLiveData<Boolean>
 ) {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = viewModel()
@@ -76,12 +107,26 @@ fun GainUpDamApp(
     val authViewModelForgotPassword: AuthViewModelForgotPassword = viewModel()
     val authViewModelVerifyOtp: AuthViewModelVerifyOtp = viewModel()
     val authManager = AuthenticationManager(context)
+
     navigateToHomeLiveData.observe(context as LifecycleOwner) { shouldNavigate ->
-        if (shouldNavigate == true) {
-            navController.navigate("home") {
-                popUpTo("sign_in") { inclusive = true }
+        shouldNavigate?.let {
+            if (it) {
+                navController.navigate("home") {
+                    popUpTo("sign_in") { inclusive = true }
+                }
+                navigateToHomeLiveData.value = false
             }
-            navigateToHomeLiveData.value = false
+        }
+    }
+
+    navigateToGenderLiveData.observe(context as LifecycleOwner) { shouldNavigate ->
+        shouldNavigate?.let {
+            if (it) {
+                navController.navigate("gender") {
+                    popUpTo("sign_in") { inclusive = true }
+                }
+                navigateToGenderLiveData.value = false
+            }
         }
     }
 
@@ -115,6 +160,7 @@ fun GainUpDamApp(
         composable("editProfileScreen") { EditProfileScreen(navController) }
         composable("verify_otp") { VerifyOtpScreen(navController, authViewModelVerifyOtp, "") }
         composable("messages") { ChatScreen(navController) }
+
         composable("nutrition") { NutritionScreen(navController) }
         composable(
             "recipe_detail/{title}/{imageRes}/{recipe}",
@@ -129,5 +175,13 @@ fun GainUpDamApp(
             val recipe = backStackEntry.arguments?.getString("recipe") ?: ""
             RecipeDetailsScreen(navController, title, imageRes, recipe)
         }
+
+        // Quiz Screens
+        composable("gender") { GenderScreen(navController) }
+        composable("age") { AgeScreen(navController) }
+        composable("height") { HeightScreen(navController) }
+        composable("weight") { WeightScreen(navController) }
+        composable("goal") { GoalScreen(navController) }
+        composable("lifestyle") { LifestyleScreen(navController) }
     }
 }
