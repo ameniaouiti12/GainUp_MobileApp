@@ -25,24 +25,23 @@ import coil.compose.rememberImagePainter
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import tn.esprit.gainupdam.ApiClient
-import tn.esprit.gainupdam.Nutrition
+import tn.esprit.gainupdam.Exercise
+import tn.esprit.gainupdam.RetrofitInstance
 
 @Composable
-fun MealsList(navController: NavHostController) {
-    var nutritionList by remember { mutableStateOf(emptyList<Nutrition>()) }
+fun WorkoutList(navController: NavHostController) {
+    var exercises by remember { mutableStateOf<List<Exercise>>(emptyList()) }
 
     LaunchedEffect(Unit) {
-        val call = ApiClient.nutritionApi.getAllNutrition()
-        call.enqueue(object : Callback<List<Nutrition>> {
-            override fun onResponse(call: Call<List<Nutrition>>, response: Response<List<Nutrition>>) {
+        RetrofitInstance.api.getExercises().enqueue(object : Callback<List<Exercise>> {
+            override fun onResponse(call: Call<List<Exercise>>, response: Response<List<Exercise>>) {
                 if (response.isSuccessful) {
-                    nutritionList = response.body() ?: emptyList()
+                    exercises = response.body() ?: emptyList()
                 }
             }
 
-            override fun onFailure(call: Call<List<Nutrition>>, t: Throwable) {
-                // Handle failure
+            override fun onFailure(call: Call<List<Exercise>>, t: Throwable) {
+                // Gérer l'erreur
             }
         })
     }
@@ -50,33 +49,35 @@ fun MealsList(navController: NavHostController) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(nutritionList) { nutrition ->
-            MealItem(
-                title = nutrition.name,
-                minutes = nutrition.calories.toString(),
-                calories = nutrition.calories.toString(),
-                imageUrl = nutrition.imageUrl,
+        items(exercises) { exercise ->
+            WorkoutItem(
+                title = exercise.name,
+                description = exercise.description,
+                imageUrl = exercise.imageUrl,
+                duration = exercise.duration.toString(),
+                calories = exercise.calories.toString(),
                 navController = navController,
-                nutritionId = nutrition._id
+                exerciseId = exercise._id
             )
         }
     }
 }
 
 @Composable
-private fun MealItem(
+private fun WorkoutItem(
     title: String,
-    minutes: String,
-    calories: String,
+    description: String,
     imageUrl: String,
+    duration: String,
+    calories: String,
     navController: NavHostController,
-    nutritionId: String
+    exerciseId: String
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                navController.navigate("recipe_detail/$nutritionId")
+                navController.navigate("workout_detail/$exerciseId")
             },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
@@ -108,15 +109,21 @@ private fun MealItem(
                     fontSize = 16.sp
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = description,
+                    color = Color.Gray, // Set the text color to gray
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Timer,
-                        contentDescription = "Time",
+                        contentDescription = "Duration",
                         tint = Color.Gray,
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        text = "$minutes Minutes",
+                        text = "$duration min",
                         color = Color.Black, // Set the text color to black
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 4.dp)
@@ -129,7 +136,7 @@ private fun MealItem(
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        text = "$calories Cal",
+                        text = "$calories cal",
                         color = Color.Black, // Set the text color to black
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 4.dp)

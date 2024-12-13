@@ -29,6 +29,8 @@ import tn.esprit.gainupdam.ScreenHome.EditProfileScreen
 import tn.esprit.gainupdam.ScreenHome.HomeScreen
 import tn.esprit.gainupdam.ScreenHome.NutritionScreen
 import tn.esprit.gainupdam.ScreenHome.RecipeDetailsScreen
+import tn.esprit.gainupdam.ScreenHome.WorkoutDetailsScreen
+import tn.esprit.gainupdam.ScreenHome.WorkoutScreen
 import tn.esprit.gainupdam.ScreensUserMangement.*
 import tn.esprit.gainupdam.ViewModel.*
 import tn.esprit.gainupdam.screens.AgeScreen
@@ -39,7 +41,6 @@ import tn.esprit.gainupdam.screens.LifestyleScreen
 import tn.esprit.gainupdam.screens.WeightScreen
 import tn.esprit.gainupdam.utils.PreferencesHelper
 import tn.esprit.gainupdam.utils.handleGoogleSignInSuccess
-
 
 class MainActivity : ComponentActivity() {
     private lateinit var callbackManager: CallbackManager
@@ -148,32 +149,33 @@ fun GainUpDamApp(
                 context = context
             )
         }
-        composable("forgot_password") {
-            ForgotPasswordScreen(
-                navController,
-                authViewModelForgotPassword
-            )
-        }
+        composable("forgot_password") { ForgotPasswordScreen(
+            navController,
+            authViewModelForgotPassword
+        ) }
         composable("change_password") { ChangePasswordScreen(navController) }
         composable("home") { HomeScreen(navController) }
         composable("profile") { ProfileScreen(navController) }
         composable("editProfileScreen") { EditProfileScreen(navController) }
         composable("verify_otp") { VerifyOtpScreen(navController, authViewModelVerifyOtp, "") }
         composable("messages") { ChatScreen(navController) }
-
         composable("nutrition") { NutritionScreen(navController) }
         composable(
-            "recipe_detail/{title}/{imageRes}/{recipe}",
+            "recipe_detail/{nutritionId}",
             arguments = listOf(
-                navArgument("title") { type = NavType.StringType },
-                navArgument("imageRes") { type = NavType.IntType },
-                navArgument("recipe") { type = NavType.StringType }
+                navArgument("nutritionId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val title = backStackEntry.arguments?.getString("title") ?: ""
-            val imageRes = backStackEntry.arguments?.getInt("imageRes") ?: 0
-            val recipe = backStackEntry.arguments?.getString("recipe") ?: ""
-            RecipeDetailsScreen(navController, title, imageRes, recipe)
+            val nutritionId = backStackEntry.arguments?.getString("nutritionId") ?: ""
+            RecipeDetailsScreen(navController, nutritionId)
+        }
+        composable("workout") { WorkoutScreen(navController) }
+        composable(
+            "workout_detail/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: ""
+            WorkoutDetailsScreen(navController, id)
         }
 
         // Quiz Screens
