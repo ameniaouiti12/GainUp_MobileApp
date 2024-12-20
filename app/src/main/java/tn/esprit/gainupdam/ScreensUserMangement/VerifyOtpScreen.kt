@@ -61,25 +61,19 @@ fun VerifyOtpScreen(navController: NavController, authViewModelVerifyOtp: AuthVi
         Spacer(modifier = Modifier.height(16.dp))
 
         // Verify OTP Button
-        Button(onClick = {
+        VerifyOtpButton(onClick = {
             if (otp.isNotEmpty()) {
                 authViewModelVerifyOtp.verifyOtp(otp) { success ->
-                    if (success) { // No need to cast to Boolean
-                        // Navigate to the next screen (e.g., change password screen)
+                    if (success) {
                         navController.navigate("change_password")
                     } else {
-                        // Show error message
                         Log.d("VerifyOtpScreen", "Failed to verify OTP")
                     }
                 }
             } else {
-                // Handle case where OTP is empty (optional)
                 Log.d("VerifyOtpScreen", "OTP cannot be empty")
             }
-        }) {
-            Text("Verify OTP")
-        }
-    }
+        })
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -104,8 +98,7 @@ fun VerifyOtpScreen(navController: NavController, authViewModelVerifyOtp: AuthVi
             )
         }
     }
-
-
+}
 
 @Composable
 fun OtpInputField(
@@ -117,7 +110,7 @@ fun OtpInputField(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(60.dp)  // Taille augmentée
+            .height(60.dp)
             .background(Color.White, shape = RoundedCornerShape(8.dp))
             .border(
                 width = 2.dp,
@@ -156,7 +149,7 @@ fun VerifyOtpButton(onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp)  // Hauteur du bouton
+            .height(70.dp)
             .padding(vertical = 10.dp),
         shape = RoundedCornerShape(11.dp),
         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0A3D62))

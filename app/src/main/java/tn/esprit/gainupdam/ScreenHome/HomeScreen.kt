@@ -2,6 +2,7 @@ package tn.esprit.gainupdam.ScreenHome
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,15 +16,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import tn.esprit.gainupdam.BottomNavigationBar.BottomNavigation
 import tn.esprit.gainupdam.Navigation.TopBar
+import tn.esprit.gainupdam.R
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavHostController) {
+    var isDarkMode by remember { mutableStateOf(false) }
+    var sleepValue by remember { mutableStateOf(0) }
+    var waterValue by remember { mutableStateOf(0) }
+
+    // Change background color based on theme mode
+    val backgroundColor = if (isDarkMode) Color(0xFF03224c) else Color(0xFFf0f0f0)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -36,13 +47,22 @@ fun HomeScreen(navController: NavHostController) {
                 .verticalScroll(rememberScrollState()) // Ajouter le défilement vertical
         ) {
             // TopBar
-            TopBar(navController)
-
+            TopBar(navController, onThemeToggle = {
+                // Toggle between light and dark mode
+                isDarkMode = !isDarkMode
+                val mode = if (isDarkMode) {
+                    AppCompatDelegate.MODE_NIGHT_YES
+                } else {
+                    AppCompatDelegate.MODE_NIGHT_NO
+                }
+                AppCompatDelegate.setDefaultNightMode(mode)
+            })
             // Progress Card
             ProgressCard()
 
             // Calorie Card
-            CalorieCard()
+            val calorie = 2474
+            CalorieCard(calories = calorie)
 
             // Stats Cards
             Row(
@@ -53,15 +73,17 @@ fun HomeScreen(navController: NavHostController) {
             ) {
                 StatCard(
                     title = "Sleep",
-                    value = "5/8",
+                    value = "$sleepValue/8",
                     unit = "Hours",
-                    progress = 0.625f
+                    progress = sleepValue / 8.0f,
+                    onIncrement = { sleepValue = (sleepValue + 1).coerceAtMost(8) }
                 )
                 StatCard(
                     title = "Water",
-                    value = "3/5",
+                    value = "$waterValue/5",
                     unit = "Liters",
-                    progress = 0.6f
+                    progress = waterValue / 5.0f,
+                    onIncrement = { waterValue = (waterValue + 1).coerceAtMost(5) }
                 )
             }
         }
@@ -95,75 +117,107 @@ fun ProgressCard() {
                 color = Color.White
             )
             Text(
-                text = "14 Exercises left",
+                text = "0 Exercise",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
-            LinearProgressIndicator(
-                progress = 0.75f,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp)
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(4.dp)),
-                color = Color(0xFF2196F3),
-                trackColor = Color(0xFF0a1728)
-            )
+            MacroProgressBar(label = "", value = "", progress = 0.0f)
         }
     }
 }
 
 @Composable
-fun StatCard(title: String, value: String, unit: String, progress: Float) {
-    Card(
+fun StatCard(
+    title: String,
+    value: String,
+    unit: String,
+    progress: Float,
+    onIncrement: () -> Unit
+) {
+    Box(
         modifier = Modifier
             .width(140.dp)
-            .height(140.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF0a1728)),
-        shape = RoundedCornerShape(12.dp) // Coins arrondis
+            .height(160.dp)
     ) {
-        Column(
+        Card(
             modifier = Modifier
-                .padding(8.dp)
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF0a1728)),
+            shape = RoundedCornerShape(12.dp)
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.White
-            )
-            Column {
+            Column(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Title
                 Text(
-                    text = value,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
                 )
-                Text(
-                    text = unit,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
-                )
+
+                // Value and Unit
+                Column {
+                    Text(
+                        text = value,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = unit,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White
+                    )
+                }
+
+                // Progress Indicator
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    CircularProgressIndicator(
+                        progress = progress,
+                        modifier = Modifier.size(50.dp),
+                        color = Color(0xFF2196F3),
+                        trackColor = Color.White
+                    )
+                }
             }
-            CircularProgressIndicator(
-                progress = progress,
-                modifier = Modifier.size(40.dp),
-                color = Color(0xFF2196F3),
-                trackColor = Color(0xFF0a1728)
+        }
+        // Increment Icon Button
+        IconButton(
+            onClick = onIncrement,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(8.dp)
+                .size(30.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.add),
+                contentDescription = "Increment",
+                tint = Color.White,
+                modifier = Modifier.size(30.dp)
             )
         }
     }
 }
 
 @Composable
-fun CalorieCard() {
+fun CalorieCard(calories: Int) {
+    val consumedCalories = calories // Example: consumed calories are the same as calculated calories
+    val remainingCalories = 2875 - consumedCalories // Example: remaining calories calculation
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF0a1728)),
-        shape = RoundedCornerShape(12.dp) // Coins arrondis
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(
             modifier = Modifier.padding(8.dp)
@@ -174,7 +228,7 @@ fun CalorieCard() {
             ) {
                 Column {
                     Text(
-                        text = "1456 kcal",
+                        text = "0 kcal",
                         style = MaterialTheme.typography.titleLarge,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
@@ -187,7 +241,7 @@ fun CalorieCard() {
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "2875 kcal",
+                        text = "2474 kcal",
                         style = MaterialTheme.typography.titleLarge,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
@@ -203,41 +257,32 @@ fun CalorieCard() {
             Spacer(modifier = Modifier.height(8.dp))
 
             // Macronutrients progress bars
-            MacroProgressBar(label = "P", value = "10/12g", progress = 0.83f)
+            MacroProgressBar(label = "P", value = "0/12g", progress = 0.0f)
             Spacer(modifier = Modifier.height(4.dp))
-            MacroProgressBar(label = "C", value = "10/12g", progress = 0.83f)
+            MacroProgressBar(label = "C", value = "0/12g", progress = 0.0f)
             Spacer(modifier = Modifier.height(4.dp))
-            MacroProgressBar(label = "F", value = "10/12g", progress = 0.83f)
+            MacroProgressBar(label = "F", value = "0/12g", progress = 0.0f)
         }
     }
 }
 
 @Composable
 fun MacroProgressBar(label: String, value: String, progress: Float) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.White,
-            modifier = Modifier.width(20.dp)
-        )
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = label, fontSize = 14.sp, color = Color.White)
+            Text(text = value, fontSize = 14.sp, color = Color.White)
+        }
         LinearProgressIndicator(
             progress = progress,
             modifier = Modifier
-                .weight(1f)
-                .height(4.dp)
-                .clip(RoundedCornerShape(2.dp)),
-            color = Color(0xFF2196F3),
-            trackColor = Color(0xFF1A1B2E)
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray,
-            modifier = Modifier.padding(start = 4.dp)
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(RoundedCornerShape(4.dp)),
+            color = Color(0xFF2196F3)
         )
     }
 }

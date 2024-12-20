@@ -23,7 +23,7 @@ sealed class BottomNavItem(
     object Workout : BottomNavItem("workout", { painterResource(id = R.drawable.muscle) }, "Workout")
     object Messages : BottomNavItem("messages", { painterResource(id = R.drawable.chat) }, "Discussion")
     object Nutrition : BottomNavItem("nutrition", { painterResource(id = R.drawable.plan) }, "Nutrition")
-    object Profile : BottomNavItem("profile", { painterResource(id = R.drawable.user) }, "Profile")
+    object Profile : BottomNavItem("profileScreen", { painterResource(id = R.drawable.user) }, "Profile")
 }
 
 @Composable
