@@ -24,21 +24,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
-import tn.esprit.gainupdam.ScreenHome.ChatScreen
-import tn.esprit.gainupdam.ScreenHome.EditProfileScreen
-import tn.esprit.gainupdam.ScreenHome.HomeScreen
-import tn.esprit.gainupdam.ScreenHome.NutritionScreen
-import tn.esprit.gainupdam.ScreenHome.RecipeDetailsScreen
-import tn.esprit.gainupdam.ScreenHome.WorkoutDetailsScreen
-import tn.esprit.gainupdam.ScreenHome.WorkoutScreen
+import tn.esprit.gainupdam.ScreenHome.*
 import tn.esprit.gainupdam.ScreensUserMangement.*
 import tn.esprit.gainupdam.ViewModel.*
-import tn.esprit.gainupdam.screens.AgeScreen
-import tn.esprit.gainupdam.screens.GenderScreen
-import tn.esprit.gainupdam.screens.GoalScreen
-import tn.esprit.gainupdam.screens.HeightScreen
-import tn.esprit.gainupdam.screens.LifestyleScreen
-import tn.esprit.gainupdam.screens.WeightScreen
+import tn.esprit.gainupdam.screens.*
 import tn.esprit.gainupdam.utils.PreferencesHelper
 import tn.esprit.gainupdam.utils.handleGoogleSignInSuccess
 
@@ -169,7 +158,7 @@ fun GainUpDamApp(
             val nutritionId = backStackEntry.arguments?.getString("nutritionId") ?: ""
             RecipeDetailsScreen(navController, nutritionId)
         }
-        composable("workout") { WorkoutScreen(navController) }
+        composable("workout") { WorkoutScreen(navController, "Tuesday") }
         composable(
             "workout_detail/{id}",
             arguments = listOf(navArgument("id") { type = NavType.StringType })

@@ -27,20 +27,21 @@ import retrofit2.Callback
 import retrofit2.Response
 import tn.esprit.gainupdam.Exercise
 import tn.esprit.gainupdam.RetrofitInstance
+import tn.esprit.gainupdam.WorkoutPlanResponse
 
 @Composable
-fun WorkoutList(navController: NavHostController) {
+fun WorkoutList(navController: NavHostController, day: String) {
     var exercises by remember { mutableStateOf<List<Exercise>>(emptyList()) }
 
     LaunchedEffect(Unit) {
-        RetrofitInstance.api.getExercises().enqueue(object : Callback<List<Exercise>> {
-            override fun onResponse(call: Call<List<Exercise>>, response: Response<List<Exercise>>) {
+        RetrofitInstance.api.getWorkoutPlanForDay(day).enqueue(object : Callback<WorkoutPlanResponse> {
+            override fun onResponse(call: Call<WorkoutPlanResponse>, response: Response<WorkoutPlanResponse>) {
                 if (response.isSuccessful) {
-                    exercises = response.body() ?: emptyList()
+                    exercises = response.body()?.data?.exercises ?: emptyList()
                 }
             }
 
-            override fun onFailure(call: Call<List<Exercise>>, t: Throwable) {
+            override fun onFailure(call: Call<WorkoutPlanResponse>, t: Throwable) {
                 // Gérer l'erreur
             }
         })

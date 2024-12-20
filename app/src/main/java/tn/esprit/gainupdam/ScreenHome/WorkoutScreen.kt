@@ -15,7 +15,7 @@ import tn.esprit.gainupdam.Navigation.WorkoutList
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun WorkoutScreen(navController: NavHostController) {
+fun WorkoutScreen(navController: NavHostController, day: String) {
     val backgroundColor = Color(0xFF03224c)
 
     Surface(
@@ -30,7 +30,7 @@ fun WorkoutScreen(navController: NavHostController) {
             TopBar(navController)
             Spacer(modifier = Modifier.height(16.dp))
 
-            WorkoutList(navController)
+            WorkoutList(navController, day)
             Spacer(modifier = Modifier.weight(1f))
             BottomNavigation(navController)
         }
