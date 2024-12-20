@@ -11,6 +11,10 @@ object SharedPreferencesUtils {
     private const val KEY_USER_ID = "user_id"
     private const val KEY_USER_EMAIL = "user_email"
     private const val KEY_TOKEN = "token_key"
+    private const val KEY_NAME = "user_name"
+
+    private const val KEY_REMEMBER_ME = "remember_me"
+    private const val KEY_PASSWORD = "password"
 
     // Get SharedPreferences instance
     private fun getSharedPreferences(context: Context): SharedPreferences {
@@ -51,5 +55,48 @@ object SharedPreferencesUtils {
     fun getToken(context: Context): String? {
         val prefs = getSharedPreferences(context)
         return prefs.getString(KEY_TOKEN, null)
+    }
+
+    // Save remember me status
+    fun saveRememberMe(context: Context, rememberMe: Boolean) {
+        val prefs = getSharedPreferences(context)
+        prefs.edit().putBoolean(KEY_REMEMBER_ME, rememberMe).apply()
+    }
+
+    // Retrieve remember me status
+    fun getRememberMe(context: Context): Boolean {
+        val prefs = getSharedPreferences(context)
+        return prefs.getBoolean(KEY_REMEMBER_ME, false)
+    }
+
+    // Save password
+    fun savePassword(context: Context, password: String) {
+        val prefs = getSharedPreferences(context)
+        prefs.edit().putString(KEY_PASSWORD, password).apply()
+    }
+
+    // Retrieve password
+    fun getPassword(context: Context): String? {
+        val prefs = getSharedPreferences(context)
+        return prefs.getString(KEY_PASSWORD, null)
+    }
+
+    fun saveUserName(context: Context, fullName: String) {
+        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString(KEY_NAME, fullName).apply()
+    }
+
+    fun getUserName(context: Context): String? {
+        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getString(KEY_NAME, null)
+    }
+    // Clear user credentials
+    fun clearCredentials(context: Context) {
+        val prefs = getSharedPreferences(context)
+        val editor = prefs.edit()
+        editor.remove(KEY_USER_EMAIL)
+        editor.remove(KEY_PASSWORD)
+        editor.remove(KEY_REMEMBER_ME)
+        editor.apply()
     }
 }

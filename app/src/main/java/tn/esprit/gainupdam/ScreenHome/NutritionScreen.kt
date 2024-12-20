@@ -2,9 +2,14 @@ package tn.esprit.gainupdam.ScreenHome
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -16,7 +21,10 @@ import tn.esprit.gainupdam.Navigation.TopBar
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NutritionScreen(navController: NavHostController) {
-    val backgroundColor = Color(0xFF03224c)
+    var isDarkMode by remember { mutableStateOf(false) }
+
+    // Change background color based on theme mode
+    val backgroundColor = if (isDarkMode) Color(0xFF03224c) else Color(0xFFf0f0f0)
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -27,7 +35,17 @@ fun NutritionScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            TopBar(navController)
+            TopBar(navController, onThemeToggle = {
+
+                // Toggle between light and dark mode
+                isDarkMode = !isDarkMode
+                val mode = if (isDarkMode) {
+                    AppCompatDelegate.MODE_NIGHT_YES
+                } else {
+                    AppCompatDelegate.MODE_NIGHT_NO
+                }
+                AppCompatDelegate.setDefaultNightMode(mode)
+            })
             Spacer(modifier = Modifier.height(16.dp))
 
             MealsList(navController)

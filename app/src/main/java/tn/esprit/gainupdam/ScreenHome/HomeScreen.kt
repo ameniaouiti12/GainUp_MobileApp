@@ -2,6 +2,7 @@ package tn.esprit.gainupdam.ScreenHome
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +25,11 @@ import tn.esprit.gainupdam.Navigation.TopBar
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavHostController) {
+    var isDarkMode by remember { mutableStateOf(false) }
+
+    // Change background color based on theme mode
+    val backgroundColor = if (isDarkMode) Color(0xFF03224c) else Color(0xFFf0f0f0)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -36,8 +42,17 @@ fun HomeScreen(navController: NavHostController) {
                 .verticalScroll(rememberScrollState()) // Ajouter le défilement vertical
         ) {
             // TopBar
-            TopBar(navController)
+            TopBar(navController, onThemeToggle = {
 
+                // Toggle between light and dark mode
+                isDarkMode = !isDarkMode
+                val mode = if (isDarkMode) {
+                    AppCompatDelegate.MODE_NIGHT_YES
+                } else {
+                    AppCompatDelegate.MODE_NIGHT_NO
+                }
+                AppCompatDelegate.setDefaultNightMode(mode)
+            })
             // Progress Card
             ProgressCard()
 

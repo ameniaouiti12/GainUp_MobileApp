@@ -29,12 +29,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import tn.esprit.gainupdam.R
-import tn.esprit.gainupdam.ViewModel.AuthViewModelSinUp
+import tn.esprit.gainupdam.ViewModel.AuthViewModelSignUp
+import tn.esprit.gainupdam.utils.SharedPreferencesUtils
 
 @Composable
 fun SignUpScreen(
     navController: NavController,
-    authViewModelSignUp: AuthViewModelSinUp,
+    authViewModelSignUp: AuthViewModelSignUp,
     callbackManager: CallbackManager,
     context: ComponentActivity
 ) {
@@ -137,6 +138,10 @@ fun SignUpScreen(
                 authViewModelSignUp.performSignUp(fullName, email, password, confirmPassword) { success, message ->
                     signUpMessage = message
                     if (success) {
+                        // Sauvegarder les informations de l'utilisateur dans les SharedPreferences
+                        SharedPreferencesUtils.saveUserEmail(context, email)
+                        SharedPreferencesUtils.savePassword(context, password)
+                        SharedPreferencesUtils.saveUserName(context, fullName)
                         authViewModelSignUp.dismissSignUpDialog()
                     }
                 }
@@ -186,6 +191,7 @@ fun SignUpScreen(
         )
     }
 }
+
 
 fun clearSession(context: Context) {
     // Clear session data or authentication state here

@@ -17,12 +17,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,13 +29,16 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import tn.esprit.gainupdam.BottomNavigationBar.BottomNavigation
 import tn.esprit.gainupdam.R
 import tn.esprit.gainupdam.ScreensUserMangement.clearSession
+import tn.esprit.gainupdam.utils.SharedPreferencesUtils
 
 @SuppressLint("RememberReturnType")
 @Composable
@@ -46,6 +47,12 @@ fun ProfileScreen(navController: NavHostController) {
     val bitmap = remember { mutableStateOf<Bitmap?>(null) }
     val imageUri = remember { mutableStateOf<Uri?>(null) }
     var showLogoutDialog by remember { mutableStateOf(false) } // Track dialog visibility
+    var unreadNotifications by remember { mutableStateOf(3) } // Example to simulate unread notifications
+
+    // Récupérer les informations de l'utilisateur depuis les SharedPreferences
+    val userId = SharedPreferencesUtils.getUserId(context) ?: ""
+    val fullName = SharedPreferencesUtils.getUserName(context) ?: ""
+    val email = SharedPreferencesUtils.getUserEmail(context) ?: ""
 
     // Image picker launcher
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -61,10 +68,6 @@ fun ProfileScreen(navController: NavHostController) {
             }
         }
     }
-
-    val name = remember { mutableStateOf("John Doe") }
-    val address = remember { mutableStateOf("123 Main St, City, Country") }
-    val job = remember { mutableStateOf("Software Engineer") }
 
     Box(
         modifier = Modifier
@@ -127,7 +130,7 @@ fun ProfileScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = name.value,
+                text = fullName,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -142,7 +145,7 @@ fun ProfileScreen(navController: NavHostController) {
                 .padding(vertical = 4.dp)
 
             Button(
-                onClick = {  navController.navigate("editProfileScreen")},
+                onClick = { navController.navigate("editProfileScreen") },
                 modifier = buttonModifier,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF0a1728),
@@ -177,7 +180,10 @@ fun ProfileScreen(navController: NavHostController) {
             }
             // Notification Button
             Button(
-                onClick = { /* Notifications Action */ },
+                onClick = {
+                    navController.navigate("notificationsScreen/$userId")
+                    unreadNotifications = 0 // Reset the unread notifications counter
+                },
                 modifier = buttonModifier,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF0a1728), // Navy blue background
@@ -189,12 +195,25 @@ fun ProfileScreen(navController: NavHostController) {
                     horizontalArrangement = Arrangement.Start,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_notifications), // Add icon resource
-                        contentDescription = null,
-                        tint = Color(0xFF2196F3), // Blue color for the icon
-                        modifier = Modifier.size(24.dp)
-                    )
+                    Box(
+                        modifier = Modifier.size(24.dp), // Container for the notification icon
+                        contentAlignment = Alignment.TopEnd
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_notifications), // Main notification icon
+                            contentDescription = null,
+                            tint = Color(0xFF2196F3), // Blue color for the icon
+                            modifier = Modifier.size(24.dp)
+                        )
+                        if (unreadNotifications > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .background(Color.Red, CircleShape) // Red badge
+                                    .align(Alignment.TopEnd) // Position the badge
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.width(20.dp))
                     Text(
                         text = "Notification",
@@ -285,7 +304,6 @@ fun ProfileScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(25.dp))
 
-
             // Sign Out Button
             Button(
                 onClick = { showLogoutDialog = true },
@@ -324,43 +342,88 @@ fun ProfileScreen(navController: NavHostController) {
         }
     }
 
-    // Logout Confirmation Dialog
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Log out?") },
-            text = { Text("You may check out any time you like, but you can never leave.") },
+            title = {
+                Box(
+                    contentAlignment = Alignment.Center, // Centrer le titre
+                    modifier = Modifier.fillMaxWidth() // Remplir la largeur
+                ) {
+                    Text(
+                        text = "Log out?",
+                        color = Color(0xFF2196F3), // Couleur du titre (bleu)
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        ) // Police personnalisée
+                    )
+                }
+            },
+            text = {
+                Box(
+                    contentAlignment = Alignment.Center, // Centrer l'icône et le texte
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.ExitToApp, // Icône de déconnexion
+                            contentDescription = "Logout Icon",
+                            tint = Color(0xFF2196F3), // Couleur de l'icône
+                            modifier = Modifier.size(40.dp).padding(bottom = 16.dp)
+                        )
+                        Text(
+                            text = "You may check out any time you like, but you can never leave.",
+                            style = TextStyle(
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            ), // Style du texte personnalisé
+                            textAlign = TextAlign.Center // Centrer le texte
+                        )
+                    }
+                }
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
                         // Clear session or authentication state here
-                        clearSession(context)
+                        SharedPreferencesUtils.clearCredentials(context)
 
                         // Navigate to the SignIn screen
                         navController.navigate("sign_in") {
-                            popUpTo("profileScreen") { inclusive = true }
+                            popUpTo("home") { inclusive = true }
                         }
                         showLogoutDialog = false
                     }
                 ) {
-                    Text("Go back")
+                    Text(
+                        "Go back",
+                        color = Color(0xFF2196F3),
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        ) // Style du bouton "Go back"
+                    )
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { showLogoutDialog = false }
                 ) {
-                    Text("Cancel")
+                    Text(
+                        "Cancel",
+                        color = Color(0xFF2196F3), // Couleur du bouton "Cancel"
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        ) // Style du bouton "Cancel"
+                    )
                 }
-            }
+            },
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp)) // Arrondir les coins
+                .border(4.dp, Color(0xFF2196F3), RoundedCornerShape(17.dp)) // Contour bleu
+                .background(Color.White) // Fond blanc
         )
     }
-}
-
-// Function to clear the session
-fun clearSession(context: Context) {
-    val sharedPreferences = context.getSharedPreferences("authPrefs", Context.MODE_PRIVATE)
-    val editor = sharedPreferences.edit()
-    editor.clear()
-    editor.apply()
 }

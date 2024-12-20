@@ -1,15 +1,20 @@
 package tn.esprit.gainupdam
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -24,13 +29,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import com.google.firebase.messaging.FirebaseMessaging
 import tn.esprit.gainupdam.ScreenHome.ChatScreen
 import tn.esprit.gainupdam.ScreenHome.EditProfileScreen
 import tn.esprit.gainupdam.ScreenHome.HomeScreen
+import tn.esprit.gainupdam.ScreenHome.NotificationsScreen
 import tn.esprit.gainupdam.ScreenHome.NutritionScreen
 import tn.esprit.gainupdam.ScreenHome.RecipeDetailsScreen
-import tn.esprit.gainupdam.ScreenHome.WorkoutDetailsScreen
-import tn.esprit.gainupdam.ScreenHome.WorkoutScreen
 import tn.esprit.gainupdam.ScreensUserMangement.*
 import tn.esprit.gainupdam.ViewModel.*
 import tn.esprit.gainupdam.screens.AgeScreen
@@ -47,6 +52,17 @@ class MainActivity : ComponentActivity() {
     private val navigateToHomeLiveData = MutableLiveData<Boolean>()
     private val navigateToGenderLiveData = MutableLiveData<Boolean>()
 
+    // Declare the permission launcher
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // FCM SDK (and your app) can post notifications.
+        } else {
+            // Inform user that your app will not show notifications.
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +71,23 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             GainUpDamApp(callbackManager, this, navigateToHomeLiveData, navigateToGenderLiveData)
+        }
+
+        askNotificationPermission()
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+
+            // Log and toast
+            val msg = getString(R.string.msg_token_fmt, token)
+            Log.d(TAG, msg)
+            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -88,7 +121,27 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun askNotificationPermission() {
+        // This is only necessary for API level >= 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                // FCM SDK (and your app) can post notifications.
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                // Display an educational UI explaining to the user the features that will be enabled
+                // by them granting the POST_NOTIFICATION permission. This UI should provide the user
+                // "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
+                // If the user selects "No thanks," allow the user to continue without notifications.
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
     companion object {
+        private const val TAG = "MainActivity"
         private const val RC_SIGN_IN = 9001
     }
 }
@@ -104,7 +157,7 @@ fun GainUpDamApp(
 ) {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = viewModel()
-    val authViewModelSignUp: AuthViewModelSinUp = viewModel()
+    val authViewModelSignUp: AuthViewModelSignUp = viewModel()
     val authViewModelForgotPassword: AuthViewModelForgotPassword = viewModel()
     val authViewModelVerifyOtp: AuthViewModelVerifyOtp = viewModel()
     val authManager = AuthenticationManager(context)
@@ -149,33 +202,34 @@ fun GainUpDamApp(
                 context = context
             )
         }
-        composable("forgot_password") { ForgotPasswordScreen(
-            navController,
-            authViewModelForgotPassword
-        ) }
+        composable("forgot_password") {
+            ForgotPasswordScreen(
+                navController,
+                authViewModelForgotPassword
+            )
+        }
         composable("change_password") { ChangePasswordScreen(navController) }
         composable("home") { HomeScreen(navController) }
-        composable("profile") { ProfileScreen(navController) }
-        composable("editProfileScreen") { EditProfileScreen(navController) }
+        composable("profileScreen/{userId}/{name}/{email}") {
+            ProfileScreen(navController)
+        }
+        composable("editProfileScreen") { EditProfileScreen(navController,) }
         composable("verify_otp") { VerifyOtpScreen(navController, authViewModelVerifyOtp, "") }
         composable("messages") { ChatScreen(navController) }
+
         composable("nutrition") { NutritionScreen(navController) }
         composable(
-            "recipe_detail/{nutritionId}",
+            "recipe_detail/{title}/{imageRes}/{recipe}",
             arguments = listOf(
-                navArgument("nutritionId") { type = NavType.StringType }
+                navArgument("title") { type = NavType.StringType },
+                navArgument("imageRes") { type = NavType.IntType },
+                navArgument("recipe") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val nutritionId = backStackEntry.arguments?.getString("nutritionId") ?: ""
-            RecipeDetailsScreen(navController, nutritionId)
-        }
-        composable("workout") { WorkoutScreen(navController) }
-        composable(
-            "workout_detail/{id}",
-            arguments = listOf(navArgument("id") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id") ?: ""
-            WorkoutDetailsScreen(navController, id)
+            val imageRes = backStackEntry.arguments?.getInt("imageRes") ?: 0
+            val recipe = backStackEntry.arguments?.getString("recipe") ?: ""
+            RecipeDetailsScreen(navController,nutritionId)
         }
 
         // Quiz Screens
@@ -185,5 +239,14 @@ fun GainUpDamApp(
         composable("weight") { WeightScreen(navController) }
         composable("goal") { GoalScreen(navController) }
         composable("lifestyle") { LifestyleScreen(navController) }
+
+        // Profile and Notifications Screens
+        composable("profileScreen/{userId}/{name}/{email}") {
+            ProfileScreen(navController)
+        }
+        composable("notificationsScreen/{userId}") { backStackEntry ->
+            val userId = PreferencesHelper.getUserId(context) ?: ""
+            NotificationsScreen(userId, context)
+        }
     }
 }

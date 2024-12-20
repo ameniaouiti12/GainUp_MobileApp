@@ -6,6 +6,10 @@ data class AuthResponse(
     val token: String,
     val accessToken: String,
     val refreshToken: String,
-    val userId: String
+    val userId: String,
+    val name: String?,
+    val email: String? // Utilisez String? pour permettre les valeurs null
+
 )
+
 

@@ -17,6 +17,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _loginState = mutableStateOf(LoginState())
     val loginState: State<LoginState> = _loginState
+    private var user: User? = null
 
     fun login(email: String, password: String, rememberMe: Boolean, callback: (Boolean) -> Unit) {
         Log.d("AuthViewModel", "Login called with email: $email, password: $password, rememberMe: $rememberMe")
@@ -37,6 +38,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     Log.d("AuthViewModel", "AuthResponse: $authResponse")
                     if (authResponse != null && authResponse.accessToken.isNotEmpty()) {
                         SharedPreferencesUtils.saveToken(context = getApplication(), token = authResponse.accessToken)
+                        user = User(
+                            userId = authResponse.userId,
+                            name = authResponse.name ?: "Unknown", // Utilisez "Unknown" si le nom est null
+                            email = authResponse.email ?: "Unknown" // Utilisez "Unknown" si l'email est null
+                        )
                         callback(true)
                     } else {
                         _loginState.value = LoginState(error = "Login failed: Invalid credentials")
@@ -55,6 +61,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
         })
     }
+
+    fun getUser(): User? {
+        return user
+    }
 }
 
+data class User(val userId: String, val name: String, val email: String)
 data class LoginState(val error: String = "")

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "796853682261",
+    "project_id": "gainup-1277f",
+    "storage_bucket": "gainup-1277f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:796853682261:android:1c56aa804f5f507d0794dc",
+        "android_client_info": {
+          "package_name": "tn.esprit.gainupdam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCMRNwqalNhWIhRG3FsP81BCYl2CzJImU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
