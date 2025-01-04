@@ -1,6 +1,7 @@
 package tn.esprit.gainupdam.ScreenHome
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Surface
@@ -16,6 +17,8 @@ import tn.esprit.gainupdam.Navigation.WorkoutList
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WorkoutScreen(navController: NavHostController, day: String) {
+    Log.d("WorkoutScreen", "Day parameter: $day")
+
     val backgroundColor = Color(0xFF03224c)
 
     Surface(

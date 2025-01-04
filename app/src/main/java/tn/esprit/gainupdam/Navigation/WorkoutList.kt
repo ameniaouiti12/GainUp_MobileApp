@@ -32,34 +32,73 @@ import tn.esprit.gainupdam.WorkoutPlanResponse
 @Composable
 fun WorkoutList(navController: NavHostController, day: String) {
     var exercises by remember { mutableStateOf<List<Exercise>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var isError by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
+    // Fetch data when the 'day' changes
+    LaunchedEffect(day) {
+        isLoading = true
+        isError = false
         RetrofitInstance.api.getWorkoutPlanForDay(day).enqueue(object : Callback<WorkoutPlanResponse> {
             override fun onResponse(call: Call<WorkoutPlanResponse>, response: Response<WorkoutPlanResponse>) {
                 if (response.isSuccessful) {
                     exercises = response.body()?.data?.exercises ?: emptyList()
+                } else {
+                    isError = true
+                    Log.e("WorkoutList", "Error: ${response.message()}")
                 }
+                isLoading = false
             }
 
             override fun onFailure(call: Call<WorkoutPlanResponse>, t: Throwable) {
-                // Gérer l'erreur
+                isError = true
+                isLoading = false
+                Log.e("WorkoutList", "Network Error: ${t.message}")
             }
         })
     }
 
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(exercises) { exercise ->
-            WorkoutItem(
-                title = exercise.name,
-                description = exercise.description,
-                imageUrl = exercise.imageUrl,
-                duration = exercise.duration.toString(),
-                calories = exercise.calories.toString(),
-                navController = navController,
-                exerciseId = exercise._id
-            )
+    when {
+        isLoading -> {
+            // Display a loading indicator while fetching data
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        isError -> {
+            // Show an error message if the network call fails
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Failed to load workout plans. Please try again.",
+                    color = Color.Red,
+                    fontSize = 16.sp
+                )
+            }
+        }
+        else -> {
+            // Display the workout list
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(16.dp)
+            ) {
+                items(exercises) { exercise ->
+                    WorkoutItem(
+                        title = exercise.name,
+                        description = exercise.description,
+                        imageUrl = exercise.imageUrl,
+                        duration = exercise.duration.toString(),
+                        calories = exercise.calories.toString(),
+                        navController = navController,
+                        exerciseId = exercise._id
+                    )
+                }
+            }
         }
     }
 }
