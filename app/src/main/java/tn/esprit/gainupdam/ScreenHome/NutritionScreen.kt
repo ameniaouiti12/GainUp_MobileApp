@@ -4,7 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -16,6 +16,7 @@ import tn.esprit.gainupdam.Navigation.TopBar
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NutritionScreen(navController: NavHostController) {
+    var selectedDay by remember { mutableStateOf("Tuesday") }
     val backgroundColor = Color(0xFF03224c)
 
     Surface(
@@ -27,10 +28,12 @@ fun NutritionScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            TopBar(navController)
+            TopBar(navController, onDaySelected = { day ->
+                selectedDay = day
+            })
             Spacer(modifier = Modifier.height(16.dp))
 
-            MealsList(navController)
+            MealsList(navController, selectedDay)
             Spacer(modifier = Modifier.weight(1f))
             BottomNavigation(navController)
         }

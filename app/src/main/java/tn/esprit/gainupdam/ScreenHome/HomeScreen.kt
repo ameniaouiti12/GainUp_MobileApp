@@ -24,6 +24,8 @@ import tn.esprit.gainupdam.Navigation.TopBar
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavHostController) {
+    var selectedDay by remember { mutableStateOf("Tuesday") }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -36,7 +38,9 @@ fun HomeScreen(navController: NavHostController) {
                 .verticalScroll(rememberScrollState()) // Ajouter le défilement vertical
         ) {
             // TopBar
-            TopBar(navController)
+            TopBar(navController, onDaySelected = { day ->
+                selectedDay = day
+            })
 
             // Progress Card
             ProgressCard()

@@ -10,7 +10,6 @@ data class WorkoutPlanData(
     val exercises: List<Exercise>
 )
 
-
 data class Exercise(
     val _id: String,
     val name: String,

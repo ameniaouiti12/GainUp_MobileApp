@@ -29,11 +29,11 @@ import tn.esprit.gainupdam.ApiClient
 import tn.esprit.gainupdam.Nutrition
 
 @Composable
-fun MealsList(navController: NavHostController) {
+fun MealsList(navController: NavHostController, selectedDay: String) {
     var nutritionList by remember { mutableStateOf(emptyList<Nutrition>()) }
 
-    LaunchedEffect(Unit) {
-        val call = ApiClient.nutritionApi.getAllNutrition()
+    LaunchedEffect(selectedDay) {
+        val call = ApiClient.nutritionApi.getNutritionByDay(selectedDay)
         call.enqueue(object : Callback<List<Nutrition>> {
             override fun onResponse(call: Call<List<Nutrition>>, response: Response<List<Nutrition>>) {
                 if (response.isSuccessful) {

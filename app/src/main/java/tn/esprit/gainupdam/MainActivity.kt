@@ -9,7 +9,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -158,7 +158,12 @@ fun GainUpDamApp(
             val nutritionId = backStackEntry.arguments?.getString("nutritionId") ?: ""
             RecipeDetailsScreen(navController, nutritionId)
         }
-        composable("workout") { WorkoutScreen(navController, "Tuesday") }
+        composable("workout") {
+            var selectedDay by remember { mutableStateOf("Tuesday") }
+            WorkoutScreen(navController, selectedDay) { day ->
+                selectedDay = day
+            }
+        }
         composable(
             "workout_detail/{id}",
             arguments = listOf(navArgument("id") { type = NavType.StringType })
