@@ -31,6 +31,7 @@ data class Exercise(
 )
 
 data class Meal(
+    val _id: String,  // Ajout de l'identifiant unique
     val name: String,
     val description: String,
     val imageUrl: String,

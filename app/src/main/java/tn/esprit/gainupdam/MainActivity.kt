@@ -150,15 +150,20 @@ fun GainUpDamApp(
         composable("editProfileScreen") { EditProfileScreen(navController) }
         composable("verify_otp") { VerifyOtpScreen(navController, authViewModelVerifyOtp, "") }
         composable("messages") { ChatScreen(navController) }
-        composable("nutrition") { NutritionScreen(navController) }
+        composable("diet") {
+            var selectedDay by remember { mutableStateOf("Tuesday") }
+            DietScreen(navController, selectedDay, { day ->
+                selectedDay = day
+            }, authManager)
+        }
         composable(
-            "recipe_detail/{nutritionId}",
+            "meal_detail/{id}",
             arguments = listOf(
-                navArgument("nutritionId") { type = NavType.StringType }
+                navArgument("id") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val nutritionId = backStackEntry.arguments?.getString("nutritionId") ?: ""
-            RecipeDetailsScreen(navController, nutritionId)
+            val mealId = backStackEntry.arguments?.getString("id") ?: ""
+            MealDetailsScreen(navController, mealId)
         }
         composable("workout") {
             var selectedDay by remember { mutableStateOf("Tuesday") }
