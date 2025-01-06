@@ -35,15 +35,17 @@ class MainActivity : ComponentActivity() {
     private lateinit var callbackManager: CallbackManager
     private val navigateToHomeLiveData = MutableLiveData<Boolean>()
     private val navigateToGenderLiveData = MutableLiveData<Boolean>()
+    private lateinit var authManager: AuthenticationManager
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FacebookSdk.sdkInitialize(applicationContext)
         callbackManager = CallbackManager.Factory.create()
+        authManager = AuthenticationManager(this)
 
         setContent {
-            GainUpDamApp(callbackManager, this, navigateToHomeLiveData, navigateToGenderLiveData)
+            GainUpDamApp(callbackManager, this, navigateToHomeLiveData, navigateToGenderLiveData, authManager)
         }
     }
 
@@ -89,14 +91,14 @@ fun GainUpDamApp(
     callbackManager: CallbackManager,
     context: ComponentActivity,
     navigateToHomeLiveData: MutableLiveData<Boolean>,
-    navigateToGenderLiveData: MutableLiveData<Boolean>
+    navigateToGenderLiveData: MutableLiveData<Boolean>,
+    authManager: AuthenticationManager
 ) {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = viewModel()
     val authViewModelSignUp: AuthViewModelSinUp = viewModel()
     val authViewModelForgotPassword: AuthViewModelForgotPassword = viewModel()
     val authViewModelVerifyOtp: AuthViewModelVerifyOtp = viewModel()
-    val authManager = AuthenticationManager(context)
 
     navigateToHomeLiveData.observe(context as LifecycleOwner) { shouldNavigate ->
         shouldNavigate?.let {
@@ -143,7 +145,7 @@ fun GainUpDamApp(
             authViewModelForgotPassword
         ) }
         composable("change_password") { ChangePasswordScreen(navController) }
-        composable("home") { HomeScreen(navController) }
+        composable("home") { HomeScreen(navController, authManager) }
         composable("profile") { ProfileScreen(navController) }
         composable("editProfileScreen") { EditProfileScreen(navController) }
         composable("verify_otp") { VerifyOtpScreen(navController, authViewModelVerifyOtp, "") }
@@ -160,9 +162,9 @@ fun GainUpDamApp(
         }
         composable("workout") {
             var selectedDay by remember { mutableStateOf("Tuesday") }
-            WorkoutScreen(navController, selectedDay) { day ->
+            WorkoutScreen(navController, selectedDay, { day ->
                 selectedDay = day
-            }
+            }, authManager)
         }
         composable(
             "workout_detail/{id}",

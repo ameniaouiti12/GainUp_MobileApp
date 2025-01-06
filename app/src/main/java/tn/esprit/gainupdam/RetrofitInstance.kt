@@ -2,7 +2,6 @@ package tn.esprit.gainupdam
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-
 object RetrofitInstance {
     private const val BASE_URL = "http://192.168.150.221:3000/" // Utilisez l'adresse IP de votre serveur local
 

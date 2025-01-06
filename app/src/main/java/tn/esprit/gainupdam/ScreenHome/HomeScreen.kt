@@ -20,10 +20,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import tn.esprit.gainupdam.BottomNavigationBar.BottomNavigation
 import tn.esprit.gainupdam.Navigation.TopBar
+import tn.esprit.gainupdam.ViewModel.AuthenticationManager
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(navController: NavHostController, authManager: AuthenticationManager) {
     var selectedDay by remember { mutableStateOf("Tuesday") }
 
     Box(

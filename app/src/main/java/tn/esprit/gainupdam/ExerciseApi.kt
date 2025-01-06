@@ -26,5 +26,8 @@ interface ExerciseApi {
     fun deleteExercise(@Path("id") id: String): Call<Exercise>
 
     @GET("exercise/plan")
-    fun getWorkoutPlanForDay(@Query("day") day: String): Call<WorkoutPlanResponse>
+    fun getWorkoutPlanForDay(@Query("day") day: String): Call<List<WorkoutPlanData>>
+
+    @GET("user/{userId}")
+    fun getUserById(@Path("userId") userId: String): Call<List<User>>
 }

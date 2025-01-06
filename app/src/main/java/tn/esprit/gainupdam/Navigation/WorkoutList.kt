@@ -1,6 +1,5 @@
 package tn.esprit.gainupdam.Navigation
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,82 +21,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import tn.esprit.gainupdam.Exercise
-import tn.esprit.gainupdam.RetrofitInstance
-import tn.esprit.gainupdam.WorkoutPlanResponse
+import tn.esprit.gainupdam.WorkoutPlanData
 
 @Composable
-fun WorkoutList(navController: NavHostController, day: String) {
-    var exercises by remember { mutableStateOf<List<Exercise>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var isError by remember { mutableStateOf(false) }
-
-    // Fetch data when the 'day' changes
-    LaunchedEffect(day) {
-        isLoading = true
-        isError = false
-        RetrofitInstance.api.getWorkoutPlanForDay(day).enqueue(object : Callback<WorkoutPlanResponse> {
-            override fun onResponse(call: Call<WorkoutPlanResponse>, response: Response<WorkoutPlanResponse>) {
-                if (response.isSuccessful) {
-                    exercises = response.body()?.data?.exercises ?: emptyList()
-                } else {
-                    isError = true
-                    Log.e("WorkoutList", "Error: ${response.message()}")
-                }
-                isLoading = false
-            }
-
-            override fun onFailure(call: Call<WorkoutPlanResponse>, t: Throwable) {
-                isError = true
-                isLoading = false
-                Log.e("WorkoutList", "Network Error: ${t.message}")
-            }
-        })
-    }
-
-    when {
-        isLoading -> {
-            // Display a loading indicator while fetching data
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        }
-        isError -> {
-            // Show an error message if the network call fails
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Failed to load workout plans. Please try again.",
-                    color = Color.Red,
-                    fontSize = 16.sp
+fun WorkoutList(navController: NavHostController, workoutPlan: List<WorkoutPlanData>) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(16.dp)
+    ) {
+        items(workoutPlan) { plan ->
+            plan.exercises.forEach { exercise ->
+                WorkoutItem(
+                    title = exercise.name,
+                    description = exercise.description,
+                    imageUrl = exercise.imageUrl,
+                    duration = exercise.duration.toString(),
+                    calories = exercise.calories.toString(),
+                    navController = navController,
+                    exerciseId = exercise._id
                 )
-            }
-        }
-        else -> {
-            // Display the workout list
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(16.dp)
-            ) {
-                items(exercises) { exercise ->
-                    WorkoutItem(
-                        title = exercise.name,
-                        description = exercise.description,
-                        imageUrl = exercise.imageUrl,
-                        duration = exercise.duration.toString(),
-                        calories = exercise.calories.toString(),
-                        navController = navController,
-                        exerciseId = exercise._id
-                    )
-                }
             }
         }
     }
