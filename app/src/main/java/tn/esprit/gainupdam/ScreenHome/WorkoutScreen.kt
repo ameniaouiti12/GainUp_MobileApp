@@ -63,6 +63,8 @@ fun WorkoutScreen(
         })
     }
 
+    val filteredExercises = user?.workoutPlan?.find { it.day == day }?.exercises
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = backgroundColor
@@ -97,10 +99,10 @@ fun WorkoutScreen(
                     }
                 }
                 else -> {
-                    user?.workoutPlan?.let {
+                    filteredExercises?.let {
                         WorkoutList(navController, it)
                     } ?: run {
-                        Text("No workout plan available")
+                        Text("No workout plan available for $day")
                     }
                 }
             }

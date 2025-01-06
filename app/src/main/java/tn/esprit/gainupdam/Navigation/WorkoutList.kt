@@ -22,26 +22,23 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import tn.esprit.gainupdam.Exercise
-import tn.esprit.gainupdam.WorkoutPlanData
 
 @Composable
-fun WorkoutList(navController: NavHostController, workoutPlan: List<WorkoutPlanData>) {
+fun WorkoutList(navController: NavHostController, exercises: List<Exercise>) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.padding(16.dp)
     ) {
-        items(workoutPlan) { plan ->
-            plan.exercises.forEach { exercise ->
-                WorkoutItem(
-                    title = exercise.name,
-                    description = exercise.description,
-                    imageUrl = exercise.imageUrl,
-                    duration = exercise.duration.toString(),
-                    calories = exercise.calories.toString(),
-                    navController = navController,
-                    exerciseId = exercise._id
-                )
-            }
+        items(exercises) { exercise ->
+            WorkoutItem(
+                title = exercise.name,
+                description = exercise.description,
+                imageUrl = exercise.imageUrl,
+                duration = exercise.duration.toString(),
+                calories = exercise.calories.toString(),
+                navController = navController,
+                exerciseId = exercise._id
+            )
         }
     }
 }
