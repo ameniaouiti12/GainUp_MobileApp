@@ -46,7 +46,8 @@ import java.time.temporal.ChronoUnit
 @SuppressLint("UnrememberedMutableState")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TopBar(navController: NavHostController, onThemeToggle: () -> Unit) {
+fun TopBar(navController: NavHostController, onDaySelected: (String) -> Unit) {
+
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var isMenuExpanded by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
@@ -62,6 +63,7 @@ fun TopBar(navController: NavHostController, onThemeToggle: () -> Unit) {
             selectedDate = selectedDate,
             onDateSelected = { date ->
                 selectedDate = date
+                onDaySelected(date.format(DateTimeFormatter.ofPattern("EEEE")))
                 showDatePicker = false
             },
             onDismiss = { showDatePicker = false }
@@ -168,6 +170,7 @@ fun TopBar(navController: NavHostController, onThemeToggle: () -> Unit) {
         }
         DateSelector(selectedDate) { date ->
             selectedDate = date
+            onDaySelected(date.format(DateTimeFormatter.ofPattern("EEEE")))
         }
     }
 }

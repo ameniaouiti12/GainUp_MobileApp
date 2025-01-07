@@ -22,8 +22,8 @@ sealed class BottomNavItem(
     object Home : BottomNavItem("home", { painterResource(id = R.drawable.house) }, "Home")
     object Workout : BottomNavItem("workout", { painterResource(id = R.drawable.muscle) }, "Workout")
     object Messages : BottomNavItem("messages", { painterResource(id = R.drawable.chat) }, "Discussion")
-    object Nutrition : BottomNavItem("nutrition", { painterResource(id = R.drawable.plan) }, "Nutrition")
-    object Profile : BottomNavItem("profileScreen", { painterResource(id = R.drawable.user) }, "Profile")
+    object Diet : BottomNavItem("diet", { painterResource(id = R.drawable.plan) }, "Diet")
+    object Profile : BottomNavItem("profile", { painterResource(id = R.drawable.user) }, "Profile")
 }
 
 @Composable
@@ -32,7 +32,7 @@ fun BottomNavigation(navController: NavController) {
         BottomNavItem.Home,
         BottomNavItem.Workout,
         BottomNavItem.Messages,
-        BottomNavItem.Nutrition,
+        BottomNavItem.Diet,
         BottomNavItem.Profile
     )
 

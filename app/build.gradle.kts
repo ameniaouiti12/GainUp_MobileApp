@@ -82,6 +82,7 @@ dependencies {
 
     //google
     implementation ("com.google.android.gms:play-services-auth:20.7.0")
+    implementation ("androidx.security:security-crypto:1.1.0-alpha03")
 
 
     // Retrofit, OkHttp, and Dagger (Hilt) Dependencies

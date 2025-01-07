@@ -13,8 +13,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.Composable
-import androidx.core.content.ContextCompat
+import androidx.compose.runtime.*
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -52,6 +51,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var callbackManager: CallbackManager
     private val navigateToHomeLiveData = MutableLiveData<Boolean>()
     private val navigateToGenderLiveData = MutableLiveData<Boolean>()
+    private lateinit var authManager: AuthenticationManager
 
     // Declare the permission launcher
     private val requestPermissionLauncher = registerForActivityResult(
@@ -69,9 +69,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FacebookSdk.sdkInitialize(applicationContext)
         callbackManager = CallbackManager.Factory.create()
+        authManager = AuthenticationManager(this)
 
         setContent {
-            GainUpDamApp(callbackManager, this, navigateToHomeLiveData, navigateToGenderLiveData)
+            GainUpDamApp(callbackManager, this, navigateToHomeLiveData, navigateToGenderLiveData, authManager)
         }
 
         askNotificationPermission()
@@ -154,14 +155,14 @@ fun GainUpDamApp(
     callbackManager: CallbackManager,
     context: ComponentActivity,
     navigateToHomeLiveData: MutableLiveData<Boolean>,
-    navigateToGenderLiveData: MutableLiveData<Boolean>
+    navigateToGenderLiveData: MutableLiveData<Boolean>,
+    authManager: AuthenticationManager
 ) {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = viewModel()
     val authViewModelSignUp: AuthViewModelSignUp = viewModel()
     val authViewModelForgotPassword: AuthViewModelForgotPassword = viewModel()
     val authViewModelVerifyOtp: AuthViewModelVerifyOtp = viewModel()
-    val authManager = AuthenticationManager(context)
 
     navigateToHomeLiveData.observe(context as LifecycleOwner) { shouldNavigate ->
         shouldNavigate?.let {
@@ -221,30 +222,42 @@ fun GainUpDamApp(
             )
         }
         composable("change_password") { ChangePasswordScreen(navController) }
-        composable("home") { backStackEntry ->
+        composable("home") {  
+          backStackEntry ->
             val calories = backStackEntry.arguments?.getString("calories")?.toIntOrNull() ?: 0
-            HomeScreen(navController)
-        }
-        composable("profileScreen") {
-            ProfileScreen(navController)
-        }
-        composable("editProfileScreen") { EditProfileScreen(navController,) }
+          HomeScreen(navController, authManager)}
+        composable("profile") { ProfileScreen(navController) }
+        composable("editProfileScreen") { EditProfileScreen(navController) }
         composable("verify_otp") { VerifyOtpScreen(navController, authViewModelVerifyOtp, "") }
         composable("messages") { ChatScreen(navController) }
-
-        composable("nutrition") { NutritionScreen(navController) }
+        composable("diet") {
+            var selectedDay by remember { mutableStateOf("Tuesday") }
+            DietScreen(navController, selectedDay, { day ->
+                selectedDay = day
+            }, authManager)
+        }
         composable(
-            "recipe_detail/{title}/{imageRes}/{recipe}",
+            "meal_detail/{id}",
             arguments = listOf(
-                navArgument("title") { type = NavType.StringType },
-                navArgument("imageRes") { type = NavType.IntType },
-                navArgument("recipe") { type = NavType.StringType }
+                navArgument("id") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val nutritionId = backStackEntry.arguments?.getString("nutritionId") ?: ""
-            val imageRes = backStackEntry.arguments?.getInt("imageRes") ?: 0
-            val recipe = backStackEntry.arguments?.getString("recipe") ?: ""
-            RecipeDetailsScreen(navController,nutritionId)
+            val mealId = backStackEntry.arguments?.getString("id") ?: ""
+            MealDetailsScreen(navController, mealId)
+        }
+        composable("workout") {
+            var selectedDay by remember { mutableStateOf("Tuesday") }
+            WorkoutScreen(navController, selectedDay, { day ->
+                selectedDay = day
+            }, authManager)
+        }
+        composable(
+            "workout_detail/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: ""
+            WorkoutDetailsScreen(navController, id)
+
         }
 
         // Quiz Screens

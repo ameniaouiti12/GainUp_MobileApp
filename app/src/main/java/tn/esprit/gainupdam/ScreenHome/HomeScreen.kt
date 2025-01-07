@@ -23,17 +23,20 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import tn.esprit.gainupdam.BottomNavigationBar.BottomNavigation
 import tn.esprit.gainupdam.Navigation.TopBar
+import tn.esprit.gainupdam.ViewModel.AuthenticationManager
 import tn.esprit.gainupdam.R
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(navController: NavHostController, authManager: AuthenticationManager) {
+    var selectedDay by remember { mutableStateOf("Tuesday") }
     var isDarkMode by remember { mutableStateOf(false) }
     var sleepValue by remember { mutableStateOf(0) }
     var waterValue by remember { mutableStateOf(0) }
 
     // Change background color based on theme mode
     val backgroundColor = if (isDarkMode) Color(0xFF03224c) else Color(0xFFf0f0f0)
+
 
     Box(
         modifier = Modifier
@@ -47,16 +50,11 @@ fun HomeScreen(navController: NavHostController) {
                 .verticalScroll(rememberScrollState()) // Ajouter le défilement vertical
         ) {
             // TopBar
-            TopBar(navController, onThemeToggle = {
-                // Toggle between light and dark mode
-                isDarkMode = !isDarkMode
-                val mode = if (isDarkMode) {
-                    AppCompatDelegate.MODE_NIGHT_YES
-                } else {
-                    AppCompatDelegate.MODE_NIGHT_NO
-                }
-                AppCompatDelegate.setDefaultNightMode(mode)
+            TopBar(navController, onDaySelected = { day ->
+                selectedDay = day
             })
+
+
             // Progress Card
             ProgressCard()
 

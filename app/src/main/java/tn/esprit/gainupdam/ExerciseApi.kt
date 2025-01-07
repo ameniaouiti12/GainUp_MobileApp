@@ -7,6 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ExerciseApi {
     @GET("exercises")
@@ -23,4 +24,10 @@ interface ExerciseApi {
 
     @DELETE("exercises/{id}")
     fun deleteExercise(@Path("id") id: String): Call<Exercise>
+
+    @GET("exercise/plan")
+    fun getWorkoutPlanForDay(@Query("day") day: String): Call<List<WorkoutPlanData>>
+
+    @GET("user/{userId}")
+    fun getUserById(@Path("userId") userId: String): Call<List<User>>
 }
