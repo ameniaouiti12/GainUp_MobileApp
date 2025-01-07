@@ -2,5 +2,10 @@
     <string name="app_name">GainUp</string>
 
         <string name="facebook_app_id">491580327225325</string>
+    <string name="default_notification_channel_id">default_channel</string>
+    <string name="msg_token_fmt">FCM Token: %s</string>
+
+
+
 
 </resources>

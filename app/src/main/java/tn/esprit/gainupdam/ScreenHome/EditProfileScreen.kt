@@ -14,18 +14,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import tn.esprit.gainupdam.utils.SharedPreferencesUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(navController: NavHostController) {
-    var name by remember { mutableStateOf("John Doe") }
-    var email by remember { mutableStateOf("john.doe@example.com") }
-    var password by remember { mutableStateOf("password123") }
+    val context = LocalContext.current
+    var editedName by remember { mutableStateOf(SharedPreferencesUtils.getUserName(context) ?: "") }
+    var editedEmail by remember { mutableStateOf(SharedPreferencesUtils.getUserEmail(context) ?: "") }
+    var password by remember { mutableStateOf(SharedPreferencesUtils.getPassword(context) ?:"") }
 
     Box(
         modifier = Modifier
@@ -48,8 +51,8 @@ fun EditProfileScreen(navController: NavHostController) {
 
             // Name Input
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
+                value = editedName,
+                onValueChange = { editedName = it },
                 label = { Text("Name", color = Color.White) },
                 modifier = Modifier
                     .width(300.dp) // Reduce width of the TextField
@@ -71,8 +74,8 @@ fun EditProfileScreen(navController: NavHostController) {
 
             // Email Input
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = editedEmail,
+                onValueChange = { editedEmail = it },
                 label = { Text("Email", color = Color.White) },
                 modifier = Modifier
                     .width(300.dp) // Reduce width of the TextField
@@ -117,7 +120,13 @@ fun EditProfileScreen(navController: NavHostController) {
 
             // Save Changes Button
             Button(
-                onClick = { /* Handle saving changes */ },
+                onClick = {
+                    // Sauvegarder les modifications dans les SharedPreferences
+                    SharedPreferencesUtils.saveUserName(context, editedName)
+                    SharedPreferencesUtils.saveUserEmail(context, editedEmail)
+                    SharedPreferencesUtils.savePassword(context, password)
+                    navController.navigateUp()
+                },
                 modifier = Modifier
                     .width(300.dp) // Match width of TextFields
                     .height(50.dp)

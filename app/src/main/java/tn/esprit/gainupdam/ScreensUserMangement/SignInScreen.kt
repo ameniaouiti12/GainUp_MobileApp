@@ -43,6 +43,7 @@ import com.google.android.gms.tasks.Task
 import tn.esprit.gainupdam.R
 import tn.esprit.gainupdam.ViewModel.AuthViewModel
 import tn.esprit.gainupdam.utils.PreferencesHelper
+import tn.esprit.gainupdam.utils.SharedPreferencesUtils
 import tn.esprit.gainupdam.utils.handleGoogleSignInSuccess
 
 @Composable
@@ -52,6 +53,30 @@ fun SignInScreen(navController: NavController, authViewModel: AuthViewModel, cal
     var rememberMe by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
     val loginState = authViewModel.loginState.value
+
+    // Vérifier les informations de connexion stockées
+    LaunchedEffect(Unit) {
+        val rememberMeStatus = SharedPreferencesUtils.getRememberMe(context)
+        if (rememberMeStatus) {
+            val savedEmail = SharedPreferencesUtils.getUserEmail(context)
+            val savedPassword = SharedPreferencesUtils.getPassword(context)
+            if (savedEmail != null && savedPassword != null) {
+                email = savedEmail
+                password = savedPassword
+                rememberMe = true
+                authViewModel.login(email, password, rememberMe) { success ->
+                    if (success) {
+                        val user = authViewModel.getUser() // Récupérer les informations de l'utilisateur
+                        if (PreferencesHelper.isQuizCompleted(context)) {
+                            navController.navigate("home")
+                        } else {
+                            navController.navigate("gender")
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -86,14 +111,22 @@ fun SignInScreen(navController: NavController, authViewModel: AuthViewModel, cal
             RememberMeCheckbox(rememberMe = rememberMe, onRememberMeChange = { rememberMe = it })
             SignInButton(
                 onClick = {
-                    authViewModel.login(email, password, rememberMe) { success ->
-                        if (success) {
-                            if (PreferencesHelper.isQuizCompleted(context)) {
-                                navController.navigate("home")
-                            } else {
-                                navController.navigate("gender")
+                    if (rememberMe) {
+                        authViewModel.login(email, password, rememberMe) { success ->
+                            if (success) {
+                                val user = authViewModel.getUser() // Récupérer les informations de l'utilisateur
+                                SharedPreferencesUtils.saveUserEmail(context, email)
+                                SharedPreferencesUtils.savePassword(context, password)
+                                SharedPreferencesUtils.saveRememberMe(context, true)
+                                if (PreferencesHelper.isQuizCompleted(context)) {
+                                    navController.navigate("home")
+                                } else {
+                                    navController.navigate("gender")
+                                }
                             }
                         }
+                    } else {
+                        Toast.makeText(context, "Please check 'Remember Me' to proceed.", Toast.LENGTH_SHORT).show()
                     }
                 }
             )
@@ -113,6 +146,8 @@ fun SignInScreen(navController: NavController, authViewModel: AuthViewModel, cal
         }
     }
 }
+
+
 
 @Composable
 fun EmailInput(
@@ -319,7 +354,7 @@ fun DividerWithOr() {
 fun SocialSignInButtons(navController: NavController, callbackManager: CallbackManager, context: ComponentActivity) {
     val googleSignInClient = remember {
         GoogleSignIn.getClient(context, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("1019999665797-g988f366sdht05en53j05519on5ou5mm.apps.googleusercontent.com")  // Remplacez par votre ID client
+            .requestIdToken("YOUR_CLIENT_ID.apps.googleusercontent.com")  // Replace with your client ID
             .requestEmail()
             .build())
     }

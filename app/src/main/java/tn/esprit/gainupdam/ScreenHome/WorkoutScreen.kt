@@ -3,12 +3,14 @@ package tn.esprit.gainupdam.ScreenHome
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -39,6 +41,7 @@ fun WorkoutScreen(
     var isError by remember { mutableStateOf(false) }
 
     val backgroundColor = Color(0xFF03224c)
+
 
     // Récupérer l'ID de l'utilisateur actuellement connecté
     val userId = authManager.getUserId()
@@ -75,6 +78,7 @@ fun WorkoutScreen(
                 .padding(16.dp)
         ) {
             TopBar(navController, onDaySelected)
+
             Spacer(modifier = Modifier.height(16.dp))
 
             when {

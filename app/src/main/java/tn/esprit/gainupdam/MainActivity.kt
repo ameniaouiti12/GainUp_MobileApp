@@ -1,13 +1,17 @@
 package tn.esprit.gainupdam
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.*
 import androidx.lifecycle.LifecycleOwner
@@ -24,10 +28,22 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
-import tn.esprit.gainupdam.ScreenHome.*
+import com.google.firebase.messaging.FirebaseMessaging
+import tn.esprit.gainupdam.ScreenHome.ChatScreen
+import tn.esprit.gainupdam.ScreenHome.EditProfileScreen
+import tn.esprit.gainupdam.ScreenHome.HomeScreen
+import tn.esprit.gainupdam.ScreenHome.NotificationsScreen
+import tn.esprit.gainupdam.ScreenHome.NutritionScreen
+import tn.esprit.gainupdam.ScreenHome.RecipeDetailsScreen
 import tn.esprit.gainupdam.ScreensUserMangement.*
 import tn.esprit.gainupdam.ViewModel.*
-import tn.esprit.gainupdam.screens.*
+import tn.esprit.gainupdam.screens.AgeScreen
+import tn.esprit.gainupdam.screens.CalorieScreen
+import tn.esprit.gainupdam.screens.GenderScreen
+import tn.esprit.gainupdam.screens.GoalScreen
+import tn.esprit.gainupdam.screens.HeightScreen
+import tn.esprit.gainupdam.screens.LifestyleScreen
+import tn.esprit.gainupdam.screens.WeightScreen
 import tn.esprit.gainupdam.utils.PreferencesHelper
 import tn.esprit.gainupdam.utils.handleGoogleSignInSuccess
 
@@ -36,6 +52,17 @@ class MainActivity : ComponentActivity() {
     private val navigateToHomeLiveData = MutableLiveData<Boolean>()
     private val navigateToGenderLiveData = MutableLiveData<Boolean>()
     private lateinit var authManager: AuthenticationManager
+
+    // Declare the permission launcher
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // FCM SDK (and your app) can post notifications.
+        } else {
+            // Inform user that your app will not show notifications.
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +73,23 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             GainUpDamApp(callbackManager, this, navigateToHomeLiveData, navigateToGenderLiveData, authManager)
+        }
+
+        askNotificationPermission()
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+
+            // Log and toast
+            val msg = getString(R.string.msg_token_fmt, token)
+            Log.d(TAG, msg)
+            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -79,7 +123,27 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun askNotificationPermission() {
+        // This is only necessary for API level >= 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                // FCM SDK (and your app) can post notifications.
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                // Display an educational UI explaining to the user the features that will be enabled
+                // by them granting the POST_NOTIFICATION permission. This UI should provide the user
+                // "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
+                // If the user selects "No thanks," allow the user to continue without notifications.
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
     companion object {
+        private const val TAG = "MainActivity"
         private const val RC_SIGN_IN = 9001
     }
 }
@@ -96,7 +160,7 @@ fun GainUpDamApp(
 ) {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = viewModel()
-    val authViewModelSignUp: AuthViewModelSinUp = viewModel()
+    val authViewModelSignUp: AuthViewModelSignUp = viewModel()
     val authViewModelForgotPassword: AuthViewModelForgotPassword = viewModel()
     val authViewModelVerifyOtp: AuthViewModelVerifyOtp = viewModel()
 
@@ -121,6 +185,17 @@ fun GainUpDamApp(
             }
         }
     }
+    navigateToGenderLiveData.observe(context as LifecycleOwner) { shouldNavigate ->
+        shouldNavigate?.let {
+            if (it) {
+                navController.navigate("sign_in") {
+                    popUpTo("sign_up") { inclusive = true }
+                }
+                navigateToGenderLiveData.value = false
+            }
+        }
+    }
+
 
     NavHost(navController = navController, startDestination = "get_started") {
         composable("get_started") { GetStartedScreen(navController) }
@@ -140,12 +215,17 @@ fun GainUpDamApp(
                 context = context
             )
         }
-        composable("forgot_password") { ForgotPasswordScreen(
-            navController,
-            authViewModelForgotPassword
-        ) }
+        composable("forgot_password") {
+            ForgotPasswordScreen(
+                navController,
+                authViewModelForgotPassword
+            )
+        }
         composable("change_password") { ChangePasswordScreen(navController) }
-        composable("home") { HomeScreen(navController, authManager) }
+        composable("home") {  
+          backStackEntry ->
+            val calories = backStackEntry.arguments?.getString("calories")?.toIntOrNull() ?: 0
+          HomeScreen(navController, authManager)}
         composable("profile") { ProfileScreen(navController) }
         composable("editProfileScreen") { EditProfileScreen(navController) }
         composable("verify_otp") { VerifyOtpScreen(navController, authViewModelVerifyOtp, "") }
@@ -177,6 +257,7 @@ fun GainUpDamApp(
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id") ?: ""
             WorkoutDetailsScreen(navController, id)
+
         }
 
         // Quiz Screens
@@ -186,5 +267,20 @@ fun GainUpDamApp(
         composable("weight") { WeightScreen(navController) }
         composable("goal") { GoalScreen(navController) }
         composable("lifestyle") { LifestyleScreen(navController) }
+        composable("calorie") { CalorieScreen(navController) }
+
+        // Profile and Notifications Screens
+        composable("profileScreen") {
+            ProfileScreen(navController)
+        }
+        composable("notificationsScreen/{userId}") { backStackEntry ->
+            val userId = PreferencesHelper.getUserId(context) ?: ""
+            NotificationsScreen(userId, context)
+        }
+        composable("helpSupport") {
+            HelpSupportScreen(navController)
+        }
+
+
     }
 }

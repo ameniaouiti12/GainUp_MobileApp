@@ -12,14 +12,42 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import tn.esprit.gainupdam.ui.theme.DarkBlue
-import tn.esprit.gainupdam.viewmodel.QuizViewModel
 
 @Composable
-fun GenderScreen(navController: NavController) {
-    var selectedGender by remember { mutableStateOf("") }
+fun CalorieScreen(navController: NavController) {
+    var calories by remember { mutableStateOf(0) }
+
+    // Perform the calculation based on the user's inputs
+    LaunchedEffect(Unit) {
+        val age = 25
+        val gender = "female"
+        val height = 172
+        val weight = 81
+        val goal = "Cutting"
+        val lifestyle = "normal"
+
+        calories = when (gender) {
+            "Male" -> (10 * weight + 6.25 * height - 5 * age + 5) * when (lifestyle) {
+                "Très passif" -> 1.2
+                "Passif" -> 1.375
+                "Normal" -> 1.55
+                "Actif" -> 1.725
+                "Très actif" -> 1.9
+                else -> 1.0
+            }
+            "Female" -> (10 * weight + 6.25 * height - 5 * age - 161) * when (lifestyle) {
+                "Très passif" -> 1.2
+                "Passif" -> 1.375
+                "Normal" -> 1.55
+                "Actif" -> 1.725
+                "Très actif" -> 1.9
+                else -> 1.0
+            }
+            else -> 0
+        }.toInt()
+    }
 
     Box(
         modifier = Modifier
@@ -33,40 +61,24 @@ fun GenderScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Choose your gender",
+                text = "Your Calorie Needs",
                 fontSize = 24.sp,
                 color = DarkBlue,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(50.dp))
+            Text("Calories: 2474 kcal", fontSize = 20.sp, color = DarkBlue)
+            Spacer(modifier = Modifier.height(32.dp))
             Button(
-                onClick = {
-                    selectedGender = "Male"
-                    navController.navigate("age")
-                },
+                onClick = { navController.navigate("home") },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3), contentColor = Color.White),
                 modifier = Modifier
                     .padding(horizontal = 32.dp)
-                    .height(56.dp)
+                    .height(64.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
             ) {
-                Text("Male", fontSize = 20.sp)
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    selectedGender = "Female"
-                    navController.navigate("age")
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63), contentColor = Color.White),
-                modifier = Modifier
-                    .padding(horizontal = 32.dp)
-                    .height(56.dp)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-            ) {
-                Text("Female", fontSize = 20.sp)
+                Text("Finish", fontSize = 20.sp)
             }
         }
     }

@@ -2,6 +2,7 @@ package tn.esprit.gainupdam.ViewModel
 
 import android.app.Application
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
@@ -27,7 +28,7 @@ class AuthViewModelForgotPassword(application: Application) : AndroidViewModel(a
         Log.d("AuthViewModel", "Login called with email: $email, password: $password, rememberMe: $rememberMe")
 
         if (email.isEmpty() || password.isEmpty()) {
-            _loginState.value = LoginState(error = "Please fill all fields")
+            Toast.makeText(getApplication(), "Please fill all fields", Toast.LENGTH_SHORT).show()
             callback(false)
             return
         }
@@ -43,18 +44,18 @@ class AuthViewModelForgotPassword(application: Application) : AndroidViewModel(a
                         SharedPreferencesUtils.saveToken(context = getApplication(), token = authResponse.accessToken)
                         callback(true)
                     } else {
-                        _loginState.value = LoginState(error = "Login failed: Invalid credentials")
+                        Toast.makeText(getApplication(), "Login failed: Invalid credentials", Toast.LENGTH_SHORT).show()
                         callback(false)
                     }
                 } else {
-                    _loginState.value = LoginState(error = "Login failed: ${response.message()}")
+                    Toast.makeText(getApplication(), "Login failed: ${response.message()}", Toast.LENGTH_SHORT).show()
                     callback(false)
                 }
             }
 
             override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
                 Log.e("AuthViewModel", "Login failed: ${t.message}")
-                _loginState.value = LoginState(error = "Network error")
+                Toast.makeText(getApplication(), "Network error", Toast.LENGTH_SHORT).show()
                 callback(false)
             }
         })
@@ -62,7 +63,7 @@ class AuthViewModelForgotPassword(application: Application) : AndroidViewModel(a
 
     fun forgotPassword(email: String, callback: (Boolean) -> Unit) {
         if (email.isEmpty()) {
-            _forgotPasswordState.value = ForgotPasswordState(error = "Please enter your email")
+            Toast.makeText(getApplication(), "Please enter your email", Toast.LENGTH_SHORT).show()
             callback(false)
             return
         }
@@ -73,45 +74,40 @@ class AuthViewModelForgotPassword(application: Application) : AndroidViewModel(a
             override fun onResponse(call: Call<GenericResponse>, response: Response<GenericResponse>) {
                 Log.d("AuthViewModel", "Forgot password response received: ${response.code()}")
 
-                // Vérifier le code de réponse
                 if (response.isSuccessful) {
                     val genericResponse = response.body()
                     Log.d("AuthViewModel", "Response body: $genericResponse")
 
-                    // Si la réponse est valide et contient un message de succès
                     if (genericResponse != null) {
                         Log.d("AuthViewModel", "Message: ${genericResponse.message}")
 
-                        // L'OTP a été envoyé avec succès, afficher un message de succès
                         if (genericResponse.message != null && genericResponse.message.isNotEmpty()) {
-                            _forgotPasswordState.value = ForgotPasswordState(message = "OTP sent to your email")
+                            Toast.makeText(getApplication(), "OTP sent to your email", Toast.LENGTH_SHORT).show()
                             callback(true)
                         } else {
-                            _forgotPasswordState.value = ForgotPasswordState(error = "Failed to send OTP")
+                            Toast.makeText(getApplication(), "Failed to send OTP", Toast.LENGTH_SHORT).show()
                             callback(false)
                         }
                     } else {
                         Log.e("AuthViewModel", "Error: Response body is null.")
-                        _forgotPasswordState.value = ForgotPasswordState(error = "Failed to send OTP. Empty response body.")
+                        Toast.makeText(getApplication(), "Failed to send OTP. Empty response body.", Toast.LENGTH_SHORT).show()
                         callback(false)
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()
                     Log.e("AuthViewModel", "Error response: ${response.message()}, Error body: $errorBody")
-                    _forgotPasswordState.value = ForgotPasswordState(error = "Error: ${response.message()}")
+                    Toast.makeText(getApplication(), "Error: ${response.message()}", Toast.LENGTH_SHORT).show()
                     callback(false)
                 }
             }
 
             override fun onFailure(call: Call<GenericResponse>, t: Throwable) {
                 Log.e("AuthViewModel", "Network error: ${t.message}")
-                _forgotPasswordState.value = ForgotPasswordState(error = "Network error: ${t.message}")
+                Toast.makeText(getApplication(), "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
                 callback(false)
             }
         })
     }
-
-
 
     data class LoginState(val error: String = "")
     data class ForgotPasswordState(val error: String = "", val message: String = "")

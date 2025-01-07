@@ -1,22 +1,34 @@
 package tn.esprit.gainupdam.Navigation
 
+import android.annotation.SuppressLint
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.outlined.NightsStay
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
@@ -30,12 +42,21 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
+
+@SuppressLint("UnrememberedMutableState")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TopBar(navController: NavHostController, onDaySelected: (String) -> Unit) {
+
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var isMenuExpanded by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+
+    // Move isSystemInDarkTheme() into the Composable function
+    var mutableStateOf = mutableStateOf(isSystemInDarkTheme())
+    var isDarkMode by rememberSaveable { mutableStateOf }
+
+    val context = LocalContext.current
 
     if (showDatePicker) {
         SimpleDatePickerDialog(
@@ -94,32 +115,55 @@ fun TopBar(navController: NavHostController, onDaySelected: (String) -> Unit) {
                     expanded = isMenuExpanded,
                     onDismissRequest = { isMenuExpanded = false },
                     modifier = Modifier
+                        .fillMaxWidth()
                         .background(Color.White)
                         .border(4.dp, Color(0xFF2196F3), RoundedCornerShape(9.dp)),
                     offset = DpOffset(x = 0.dp, y = 0.dp)
                 ) {
                     DropdownMenuItem(
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
                         text = { Text("My Profile", color = Color.Black) },
                         onClick = {
-                            navController.navigate("profile")
+                            navController.navigate("profileScreen/{userId}/{name}/{email}")
                             isMenuExpanded = false
                         }
                     )
                     DropdownMenuItem(
+                        leadingIcon = { Icon(Icons.Default.Language, contentDescription = "Language") },
                         text = { Text("Language", color = Color.Black) },
                         onClick = { isMenuExpanded = false }
                     )
                     DropdownMenuItem(
-                        text = { Text("Contact Us", color = Color.Black) },
-                        onClick = { isMenuExpanded = false }
-                    )
-                    DropdownMenuItem(
+                        leadingIcon = { Icon(Icons.Default.Star, contentDescription = "Rate Us") },
                         text = { Text("Rate Us", color = Color.Black) },
                         onClick = { isMenuExpanded = false }
                     )
                     DropdownMenuItem(
+                        leadingIcon = { Icon(Icons.Default.Share, contentDescription = "Share App") },
                         text = { Text("Share App", color = Color.Black) },
                         onClick = { isMenuExpanded = false }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                imageVector = if (isDarkMode) Icons.Outlined.NightsStay else Icons.Default.WbSunny,
+                                contentDescription = if (isDarkMode) "Light Mode" else "Dark Mode"
+                            )
+                        },
+                        text = { Text(if (isDarkMode) "Light Mode" else "Dark Mode", color = Color.Black) },
+                        onClick = {
+                            onThemeToggle()
+                            isDarkMode = !isDarkMode
+                            val mode = if (isDarkMode) {
+                                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                                "Dark Mode"
+                            } else {
+                                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                                "Light Mode"
+                            }
+                            Toast.makeText(context, "Switched to $mode", Toast.LENGTH_SHORT).show()
+                            isMenuExpanded = false
+                        }
                     )
                 }
             }
@@ -130,6 +174,7 @@ fun TopBar(navController: NavHostController, onDaySelected: (String) -> Unit) {
         }
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable

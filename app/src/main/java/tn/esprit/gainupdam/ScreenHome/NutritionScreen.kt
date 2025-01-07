@@ -3,12 +3,14 @@ package tn.esprit.gainupdam.ScreenHome
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -32,6 +34,7 @@ fun DietScreen(
     onDaySelected: (String) -> Unit,
     authManager: AuthenticationManager
 ) {
+    val backgroundColor = if (isDarkMode) Color(0xFF03224c) else Color(0xFFf0f0f0)
     Log.d("DietScreen", "Day parameter: $day")
 
     var user by remember { mutableStateOf<User?>(null) }
@@ -40,7 +43,7 @@ fun DietScreen(
 
     val backgroundColor = Color(0xFF03224c)
 
-    // Récupérer l'ID de l'utilisateur actuellement connecté
+  // Récupérer l'ID de l'utilisateur actuellement connecté
     val userId = authManager.getUserId()
 
     LaunchedEffect(userId) {
@@ -75,6 +78,7 @@ fun DietScreen(
                 .padding(16.dp)
         ) {
             TopBar(navController, onDaySelected)
+
             Spacer(modifier = Modifier.height(16.dp))
 
             when {
