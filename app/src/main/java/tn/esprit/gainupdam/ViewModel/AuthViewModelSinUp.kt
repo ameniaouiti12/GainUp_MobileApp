@@ -1,6 +1,7 @@
 package tn.esprit.gainupdam.ViewModel
 
 import android.app.Application
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
@@ -13,7 +14,6 @@ import tn.esprit.gainupdam.utils.SharedPreferencesUtils
 import tn.esprit.projectgainup.remote.RetrofitClient
 
 class AuthViewModelSignUp(application: Application) : AndroidViewModel(application) {
-
 
     // État pour refléter le succès ou l'échec de l'inscription
     private val _signUpState = mutableStateOf(SignUpState())
@@ -44,21 +44,25 @@ class AuthViewModelSignUp(application: Application) : AndroidViewModel(applicati
     ) {
         // Validation des champs
         if (fullName.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
+            Toast.makeText(getApplication(), "Please fill all fields", Toast.LENGTH_SHORT).show()
             callback(false, "Please fill all fields")
             return
         }
 
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(getApplication(), "Invalid email format", Toast.LENGTH_SHORT).show()
             callback(false, "Invalid email format")
             return
         }
 
         if (password != confirmPassword) {
+            Toast.makeText(getApplication(), "Passwords do not match", Toast.LENGTH_SHORT).show()
             callback(false, "Passwords do not match")
             return
         }
 
         if (password.length < 6) {
+            Toast.makeText(getApplication(), "Password must be at least 6 characters long", Toast.LENGTH_SHORT).show()
             callback(false, "Password must be at least 6 characters long")
             return
         }
@@ -80,18 +84,21 @@ class AuthViewModelSignUp(application: Application) : AndroidViewModel(applicati
                     // Mettre à jour l'état
                     _signUpState.value = SignUpState(success = true, message = "Sign-up successful!")
                     _showSignUpDialog.value = true
-                    callback(true, "Sign-up successful!")
+                    Toast.makeText(getApplication(), "Sign-up successful!", Toast.LENGTH_SHORT).show()
+                    callback(false, "Sign-up successful!")
                 } else {
                     val message = response.body()?.message ?: "Sign-up failed!"
                     _signUpState.value = SignUpState(success = false, message = message)
+                    Toast.makeText(getApplication(), message, Toast.LENGTH_SHORT).show()
                     callback(false, message)
                 }
             }
 
             override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
                 _isLoading.value = false
-                val errorMessage = "Network error: \${t.message}"
+                val errorMessage = "Network error: ${t.message}"
                 _signUpState.value = SignUpState(success = false, message = errorMessage)
+                Toast.makeText(getApplication(), errorMessage, Toast.LENGTH_SHORT).show()
                 callback(false, errorMessage)
             }
         })

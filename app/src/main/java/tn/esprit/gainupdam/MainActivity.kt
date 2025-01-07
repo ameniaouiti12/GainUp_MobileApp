@@ -184,6 +184,17 @@ fun GainUpDamApp(
             }
         }
     }
+    navigateToGenderLiveData.observe(context as LifecycleOwner) { shouldNavigate ->
+        shouldNavigate?.let {
+            if (it) {
+                navController.navigate("sign_in") {
+                    popUpTo("sign_up") { inclusive = true }
+                }
+                navigateToGenderLiveData.value = false
+            }
+        }
+    }
+
 
     NavHost(navController = navController, startDestination = "get_started") {
         composable("get_started") { GetStartedScreen(navController) }

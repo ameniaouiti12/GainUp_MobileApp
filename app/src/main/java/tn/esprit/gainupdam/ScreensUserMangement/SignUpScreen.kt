@@ -149,7 +149,7 @@ fun SignUpScreen(
         })
 
         if (signUpMessage.isNotEmpty()) {
-            Text(text = signUpMessage, color = if (signUpMessage.contains("successful")) Color.Green else Color.Red)
+            Text(text = signUpMessage, color = if (signUpMessage.contains("")) Color.Green else Color.Red)
         }
 
         DividerWithOrTwo()
@@ -170,8 +170,8 @@ fun SignUpScreen(
     if (authViewModelSignUp.showSignUpDialog.value) {
         AlertDialog(
             onDismissRequest = { authViewModelSignUp.dismissSignUpDialog() },
-            title = { Text("Sign Up Successful") },
-            text = { Text("You have successfully signed up!") },
+            title = { Text("") },
+            text = { Text("") },
             confirmButton = {
                 TextButton(
                     onClick = {

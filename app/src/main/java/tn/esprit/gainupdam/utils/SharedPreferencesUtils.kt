@@ -133,8 +133,8 @@ object SharedPreferencesUtils {
         editor.remove(KEY_USER_EMAIL)
         editor.remove(KEY_PASSWORD)
         editor.remove(KEY_REMEMBER_ME)
-        remove(KEY_PROFILE_IMAGE_URI)
-
+        editor.remove(KEY_PROFILE_IMAGE_URI) // Utilisez editor.remove ici
         editor.apply()
     }
+
 }
